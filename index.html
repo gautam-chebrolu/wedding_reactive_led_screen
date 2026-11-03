@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1013">
+  <meta name="description" content="Afterglow — a music-reactive visual stage for your wedding night.">
+  <title>Afterglow · A visual soundtrack</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230c1013'/%3E%3Cpath d='M32 8L37 27L56 32L37 37L32 56L27 37L8 32L27 27Z' fill='%23b4dac9'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="./" class="brand" aria-label="Afterglow home"><span class="brand-star" aria-hidden="true">✧</span><span>afterglow<span class="brand-dot">.</span></span></a>
+    <span class="brand-caption">A VISUAL SOUNDTRACK FOR YOUR NIGHT</span>
+    <div class="top-actions">
+      <span class="source-pill" id="source-pill"><span class="status-dot"></span><span id="source-badge">Demo signal</span></span>
+      <button class="icon-button" id="help-button" title="Help and keyboard shortcuts" aria-label="Help and keyboard shortcuts">?</button>
+      <button class="button subtle" id="shared-show-button">Shared show <span aria-hidden="true">↗</span></button>
+      <button class="button primary" id="output-button">Open wall output <span aria-hidden="true">↗</span></button>
+    </div>
+  </header>
+
+  <div id="shared-banner" class="shared-banner" hidden><span><strong id="shared-name"></strong> <span id="shared-role"></span></span><span id="shared-status" role="status">Connecting…</span><span id="shared-wall-status">Waiting for the DJ’s wall</span></div>
+  <main class="workspace">
+    <section class="visual-workspace" aria-label="Visual stage">
+      <div class="section-heading"><div><span class="eyebrow">THE STAGE</span><h1>Set the night in motion.</h1></div><span class="session-label"><span class="tiny-star">✦</span> MADE FOR THE DANCE FLOOR</span></div>
+      <div class="stage-shell">
+        <div class="canvas-stage" id="stage">
+          <canvas id="visual-canvas" aria-label="Music-reactive scene preview"></canvas>
+          <div class="stage-top overlay"><span class="preview-label"><span class="status-dot"></span> LIVE PREVIEW</span><span id="stage-source">SIMULATED AUDIO</span></div>
+          <div class="stage-bottom overlay"><div><span class="stage-number" id="stage-number">01 / 07</span><h2 id="stage-name">Moonlit reverie</h2></div><button class="glass-button" id="fullscreen-button" title="Fullscreen (F)"><span aria-hidden="true">⛶</span> Fullscreen <kbd>F</kbd></button></div>
+          <div class="blackout-label overlay" id="blackout-label" hidden>BLACKOUT ACTIVE <span>Press B to restore the stage</span></div>
+          <button class="restore-button" id="restore-button">Show controls <kbd>H</kbd></button>
+        </div>
+        <div class="signal-strip">
+          <div class="signal-name"><span class="signal-icon" aria-hidden="true">▥</span><div><span class="micro-label">AUDIO SIGNAL</span><strong id="signal-label">Demo · 112 BPM</strong></div></div>
+          <canvas id="spectrum" width="210" height="40" aria-label="Audio frequency spectrum"></canvas>
+          <div class="band-meter"><span>LOW</span><div><i id="bass-meter"></i></div></div>
+          <div class="band-meter"><span>MID</span><div><i id="mid-meter"></i></div></div>
+          <div class="band-meter"><span>HIGH</span><div><i id="treble-meter"></i></div></div>
+          <span class="fps"><b id="fps">60</b> FPS</span>
+        </div>
+      </div>
+
+      <section class="scenes-section" aria-labelledby="scene-heading">
+        <div class="library-heading"><div class="inline-heading"><h2 id="scene-heading">Find your atmosphere</h2><span id="scene-count">7 SCENES</span></div><label class="switch-label"><input type="checkbox" id="autoCycle"><span class="switch" aria-hidden="true"></span> Auto-cycle <select id="cycleSeconds" aria-label="Scene cycle interval"><option value="30">30 sec</option><option value="60">60 sec</option><option value="120">2 min</option><option value="180">3 min</option></select></label></div>
+        <div class="scene-grid" id="scene-grid"></div>
+        <p class="scene-description" id="scene-description"></p>
+      </section>
+      <footer class="workspace-footer"><span id="privacy-label"><span class="local-dot"></span> Runs locally. Your media stays with you.</span><span><kbd>1</kbd>–<kbd>7</kbd> scenes <span class="footer-divider">/</span> <kbd>Space</kbd> next <span class="footer-divider">/</span> <kbd>B</kbd> blackout</span></footer>
+    </section>
+
+    <aside class="control-panel" aria-label="Show controls">
+      <div class="panel-title"><h2>Show controls</h2><span class="eyebrow">MAKE IT YOURS</span></div>
+      <section class="control-section">
+        <div class="control-heading"><h3><span class="control-index">01</span> Music input</h3><span id="audio-state" class="small-tag">DEMO</span></div>
+        <p class="hint remote-only">The DJ’s device supplies the audio. Sensitivity and tempo below control the wall; this preview uses its signal levels when connected.</p>
+        <div id="local-audio-controls"><label class="field-label" for="audio-source">Audio source</label>
+        <select id="audio-source"><option value="demo">Demo · no equipment needed</option><option value="microphone">Microphone / audio interface</option><option value="shared">Browser tab / system audio</option><option value="file">Local music file</option><option value="idle">Off · ambient visuals</option></select>
+        <div id="microphone-controls" hidden><label class="field-label" for="audio-device">Input device</label><div class="device-row"><select id="audio-device"><option value="">System default</option></select><button class="button subtle compact" id="refresh-audio" aria-label="Refresh audio devices" title="Refresh devices">↻</button></div><button class="button wide" id="connect-audio">Enable audio input</button><p class="hint">A feed from the DJ mixer gives the clearest response. The mic is never played through your speakers.</p></div>
+        <div id="shared-controls" hidden><button class="button wide" id="connect-shared">Choose a tab to listen to</button><p class="hint">Select a tab and check “Share tab audio”. Availability depends on your browser and operating system.</p></div>
+        <div id="file-controls" hidden><label class="button wide upload-button" for="music-file">Choose a music file <span>↗</span></label><input type="file" id="music-file" accept="audio/*" hidden><p class="file-name" id="music-name">No file selected</p><div class="playback-row"><button class="button subtle compact" id="play-pause" disabled>Pause</button><label class="check-label"><input type="checkbox" id="mute-playback"> Mute playback</label></div><input type="range" id="track-position" min="0" max="100" value="0" step="0.1" aria-label="Music playback position" disabled><span class="hint" id="track-time">0:00 / 0:00 · loops automatically</span></div>
+        <p class="hint" id="demo-hint">A silent 112 BPM signal to explore the scenes.</p>
+        </div><div class="range-heading"><label for="sensitivity">Input sensitivity</label><output id="sensitivity-value">1.4×</output></div><input type="range" id="sensitivity" min="0.3" max="4" step="0.1">
+        <div class="level-row"><span>LEVEL</span><div class="level-track"><i id="level-meter"></i></div><span id="level-value">0%</span></div>
+        <div class="beat-box"><div><span class="micro-label" id="tempo-label">ESTIMATED TEMPO</span><div class="tempo"><strong id="tempo">112</strong><span>BPM</span><span class="beat-light" id="beat-light"></span></div></div><button class="button subtle compact" id="tap-tempo" title="Tap four times to the music (T)">Tap tempo <kbd>T</kbd></button></div>
+        <div class="tempo-details"><span id="tempo-confidence">Demo clock</span><button class="text-button" id="auto-tempo" hidden>Use auto</button><button class="text-button" id="first-beat" hidden>Set beat 1</button></div>
+        <div class="bar-dots" id="bar-dots" hidden aria-label="Manual four-beat cycle"><i></i><i></i><i></i><i></i></div>
+      </section>
+
+      <section class="control-section">
+        <div class="control-heading"><h3><span class="control-index">02</span> Look & feel</h3><span class="small-tag">GLOBAL</span></div>
+        <span class="field-label">Color story</span><div id="palette-picker" class="palette-picker" role="group" aria-label="Color palette"></div><span class="palette-name" id="palette-name">Moonstone</span>
+        <div class="range-heading"><label for="intensity">Reactivity</label><output id="intensity-value">65%</output></div><input type="range" id="intensity" min="0" max="1" step="0.01"><div class="range-labels"><span>Subtle</span><span>Expressive</span></div>
+        <div class="range-heading"><label for="brightness">Wall brightness</label><output id="brightness-value">80%</output></div><input type="range" id="brightness" min="0" max="1" step="0.01">
+        <label class="check-label setting-check"><input type="checkbox" id="reducedMotion"> Gentle motion</label>
+      </section>
+
+      <section class="control-section" id="scene-setup">
+        <div class="control-heading"><h3><span class="control-index">03</span> Scene setup</h3><span class="small-tag" id="scene-setup-tag">MOON</span></div>
+        <div id="moon-controls"><p class="scene-note">Let the night breathe.</p><p class="hint">Volume swells the moon. Low frequencies open its halo. Musical accents slowly shift the aurora.</p><div class="focal-note"><span>✦</span> THE MOON IS YOUR FOCAL POINT</div></div>
+        <div id="portrait-controls" hidden>
+          <div class="portrait-roster-heading"><label class="field-label" for="portrait-person">Who’s the headliner?</label><span class="small-tag" id="portrait-count">0 PEOPLE</span></div>
+          <select id="portrait-person"><option value="">Illustrated stand-in</option></select>
+          <div class="portrait-navigation"><button class="button subtle compact" id="portrait-prev" title="Previous person ([)">← Previous</button><button class="button subtle compact" id="portrait-next" title="Next person (])">Next person →</button></div>
+          <label class="switch-label portrait-cycle-label"><input type="checkbox" id="portraitCycle"><span class="switch" aria-hidden="true"></span> Cycle people <select id="portraitCycleSeconds" aria-label="Portrait cycle interval"><option value="6">6 sec</option><option value="12">12 sec</option><option value="20">20 sec</option><option value="30">30 sec</option></select></label>
+          <label for="portrait-file" class="button wide upload-button">Add portrait photos <span>＋</span></label><input type="file" id="portrait-file" accept="image/*" multiple hidden><p class="file-name" id="portrait-name">Loading portraits…</p>
+          <button class="text-button" id="refresh-portraits">Reload portraits folder ↻</button>
+          <p class="hint">Put JPG, PNG or WebP photos in assets/portraits/ to load them automatically. Each person’s mouth placement saves separately. Use [ / ] to switch people.</p><p class="hint">Click the portrait preview to place the mouth. Fine-tune below.</p><div class="range-heading"><label for="mouthX">Mouth horizontal</label><output id="mouthX-value"></output></div><input type="range" id="mouthX" min="0" max="1" step="0.005"><div class="range-heading"><label for="mouthY">Mouth vertical</label><output id="mouthY-value"></output></div><input type="range" id="mouthY" min="0" max="1" step="0.005"><div class="range-heading"><label for="mouthWidth">Mouth width</label><output id="mouthWidth-value"></output></div><input type="range" id="mouthWidth" min="0.02" max="0.6" step="0.005"><div class="range-heading"><label for="mouthHeight">Mouth opening</label><output id="mouthHeight-value"></output></div><input type="range" id="mouthHeight" min="0.01" max="0.4" step="0.005"><div class="range-heading"><label for="mouthAngle">Mouth angle</label><output id="mouthAngle-value"></output></div><input type="range" id="mouthAngle" min="-60" max="60" step="1"></div>
+        <div id="kaleidoscope-controls" hidden><p class="scene-note">A pattern only this song can make.</p><p class="hint">Generated petals, ribbons and gems reflect into a kaleidoscope. Bass expands the geometry, treble sharpens its outlines, and beats turn the colors.</p><label class="field-label" for="kaleidoSegments">Mirrored sections</label><select id="kaleidoSegments"><option value="8">8 · broad petals</option><option value="12">12 · intricate bloom</option><option value="16">16 · fine geometry</option></select><div class="focal-note"><span>✦</span> NO CAMERA NEEDED</div></div>
+        <div id="monogram-controls" hidden><p class="scene-note">A little gold. All yours.</p><p class="hint">Your original PG artwork in gold, centered on black. Detected beats or your tap-tempo clock gently pulse the monogram. Gentle motion softens the pulse.</p><div class="focal-note"><span>✦</span> YOUR PG MONOGRAM</div></div>
+        <div id="dvd-controls" hidden><p class="scene-note">Tonight, we hit the corner.</p><p class="hint">The DVD logo changes color when it reaches a wall. The beat pulses its size. Gentle motion slows the bounce.</p><div class="range-heading"><label for="dvdSpeed">Bounce speed</label><output id="dvdSpeed-value"></output></div><input type="range" id="dvdSpeed" min="0.05" max="0.6" step="0.01"><button class="button subtle wide" id="reset-dvd">Restart the bounce <kbd>R</kbd></button></div>
+        <div id="camera-controls" hidden><p class="hint remote-only">Camera access is enabled on the DJ’s wall device. Camera treatment settings below update it live; webcam video stays on that device.</p><div id="local-camera-controls"><label class="field-label" for="camera-device">Camera</label><div class="device-row"><select id="camera-device"><option value="">System default</option></select><button class="button subtle compact" id="refresh-camera" aria-label="Refresh cameras" title="Refresh devices">↻</button></div><div class="camera-actions"><button class="button wide" id="connect-camera">Enable camera</button><button class="text-button" id="stop-camera" hidden>Stop camera</button></div><p class="hint" id="camera-status">Camera is off. Video is processed on this device.</p></div><label class="check-label"><input type="checkbox" id="mirror"> Mirror camera</label><div id="remix-controls"><label class="field-label" for="cameraEffect">Camera treatment</label><select id="cameraEffect"><option value="prism">Prism · beat-led color</option><option value="echo">Echo · soft motion trails</option><option value="kaleidoscope">Kaleidoscope · six reflections</option></select></div><div id="ball-controls" hidden><div class="range-heading"><label for="motionThreshold">Motion threshold</label><output id="motionThreshold-value"></output></div><input type="range" id="motionThreshold" min="8" max="80" step="1"><div class="range-labels"><span>More sensitive</span><span>Less sensitive</span></div><div class="range-heading"><label for="ballGravity">Ball gravity</label><output id="ballGravity-value"></output></div><input type="range" id="ballGravity" min="0.2" max="1.5" step="0.05"><button class="button subtle wide" id="reset-ball">New round <kbd>R</kbd></button><p class="hint">Detects movement, not body poses. Use steady lighting and move under the ball; a mouse or finger also works.</p></div></div>
+      </section>
+
+      <details class="output-settings"><summary>Output & preferences <span>+</span></summary><label class="field-label" for="resolution">Render width</label><select id="resolution"><option value="1280">1280 px · lighter on the laptop</option><option value="1920">1920 px · recommended</option><option value="2560">2560 px · high detail</option></select><p class="hint">Preview is 16:9. Fullscreen uses the display shape. The separate output adapts when you resize or fullscreen it.</p><div class="preferences-row"><button class="button subtle compact" id="export-settings">Export settings</button><label class="button subtle compact" for="import-settings">Import settings</label><input id="import-settings" type="file" accept="application/json,.json" hidden></div><p class="hint">Preferences and mouth placements save automatically. Folder portraits reload on launch. Session uploads and music need to be reselected.</p></details>
+      <button class="blackout-button" id="blackout-button"><span aria-hidden="true">◼</span> Blackout <kbd>B</kbd></button>
+    </aside>
+  </main>
+
+  <button id="wall-device-button" class="wall-device-button" hidden>Device setup / fullscreen</button>
+  <dialog id="shared-show-dialog"><div class="dialog-header"><span class="eyebrow">ONE SHOW. ALL YOUR SCREENS.</span><button id="close-shared" class="icon-button" aria-label="Close shared show">×</button></div><h2>Share the night.</h2>
+    <p>Create a show, send the wall link to your DJ, then control it here or from your phone. Controllers use your show password. Audio and camera inputs stay on the DJ’s device.</p>
+    <div id="shared-connect-forms"><div class="shared-tabs"><button id="shared-tab-create" class="button primary">Create a show</button><button id="shared-tab-join" class="button subtle">Join a show</button></div>
+      <form id="shared-create-form"><label class="field-label" for="show-name">Show name</label><input id="show-name" type="text" maxlength="80" value="Our wedding night" required><label class="field-label" for="show-password">Controller password · at least 10 characters</label><input id="show-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required><label class="field-label" for="show-setup-key">Server setup key · if configured by your host</label><input id="show-setup-key" type="password" autocomplete="off"><button type="submit" class="button primary wide">Create shared show</button></form>
+      <form id="shared-join-form" hidden><label class="field-label" for="show-id">Controller link or show ID</label><input id="show-id" type="text" maxlength="500" required><label class="field-label" for="join-password">Show password</label><input id="join-password" type="password" maxlength="128" autocomplete="current-password" required><button type="submit" class="button primary wide">Join as controller</button></form>
+    </div>
+    <div id="shared-session-details" hidden><label class="field-label" for="controller-link">Controller link · share with your operators, plus the password</label><div class="share-link-row"><input id="controller-link" type="url" readonly><button id="copy-controller" class="button subtle compact">Copy</button></div><label class="field-label" for="wall-link">Wall link · read-only access for the DJ</label><div class="share-link-row"><input id="wall-link" type="url" readonly><button id="copy-wall" class="button subtle compact">Copy</button></div><button id="open-shared-wall" class="button primary wide">Open shared wall ↗</button><p class="hint">Keep the wall link private: it grants viewing access. Add portrait photos after joining to share them with every device. Sessions last 12 hours; join again with the password if needed.</p><button id="leave-shared" class="button subtle wide">Disconnect this controller</button></div>
+    <p id="shared-error" class="shared-error" role="alert" hidden></p>
+  </dialog>
+  <dialog id="wall-device-dialog"><div class="dialog-header"><span class="eyebrow">DJ DEVICE SETUP</span><button id="close-wall-setup" class="icon-button" aria-label="Close device setup">×</button></div><h2>Bring the room to life.</h2><p id="wall-show-status">Connecting to your show…</p><p>Your operator controls the visuals remotely. Enable the music input here; audio and webcam video stay on this device.</p><label class="field-label" for="wall-source">Music input on this device</label><select id="wall-source"><option value="microphone">Microphone / DJ audio interface</option><option value="shared">Browser tab / system audio</option><option value="file">Local music file</option><option value="demo">Silent demo signal</option><option value="idle">Off · ambient visuals</option></select><label class="field-label" for="wall-mic-device">Microphone / audio-interface device</label><select id="wall-mic-device"><option value="">System default</option></select><input id="wall-music-file" type="file" accept="audio/*" hidden><label class="field-label" for="wall-camera-device">Camera device</label><select id="wall-camera-device"><option value="">System default</option></select><button id="wall-start-input" class="button primary wide" disabled>Enable music input</button><div class="portrait-navigation"><button id="wall-enable-camera" class="button subtle">Enable camera</button><button id="wall-stop-camera" class="button subtle">Stop camera</button></div><p id="wall-input-status" class="hint">Choose the DJ’s actual audio feed for music-reactive output.</p><button id="wall-fullscreen" class="button primary wide">Fullscreen wall</button><p class="hint">Press H or move the pointer to find Device setup again. If the network drops, the last received show continues locally and reconnects automatically.</p></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="help-dialog"><div class="dialog-header"><span class="eyebrow">A LITTLE STAGE DIRECTION</span><button id="close-help" class="icon-button" aria-label="Close help">×</button></div><h2>All you need is a little music.</h2><p>Connect the LED wall as an extended display. Open wall output, move that window to the LED display, then double-click it for fullscreen. Keep this control panel on your laptop.</p><p>Choose a microphone or the DJ’s audio-interface input and enable it. Or share audio from a browser tab, or load a local music file. Demo mode is silent and needs no equipment.</p><div class="shortcut-grid"><span><kbd>1</kbd>–<kbd>7</kbd> Choose a scene</span><span><kbd>Space</kbd> / <kbd>→</kbd> Next scene</span><span><kbd>←</kbd> Previous scene</span><span><kbd>F</kbd> Fullscreen preview</span><span><kbd>H</kbd> Hide / show controls</span><span><kbd>B</kbd> Blackout</span><span><kbd>T</kbd> Tap tempo</span><span><kbd>R</kbd> Restart ball / DVD</span><span><kbd>[</kbd> / <kbd>]</kbd> Switch people</span></div><p>Tap <kbd>T</kbd> to the beat at least four times to establish a steady tempo. “Set beat 1” marks your chosen start of a four-beat cycle. Automatic analysis detects musical hits; it does not identify the true first beat of a bar.</p><p>Audio and camera video stay on this device. In shared mode, uploaded portraits are stored privately with your show and delivered to its devices. Add people in Scene setup, or place image files in assets/portraits/ and click Reload portraits folder. Each person’s mouth placement saves separately. For show setup and adding scenes, see the project’s README.</p><button id="help-done" class="button primary wide">Let’s make a night of it</button></dialog>
+  <noscript>This stage needs JavaScript enabled. Run npm start in the project folder and open http://localhost:4173.</noscript>
+</body>
+</html>

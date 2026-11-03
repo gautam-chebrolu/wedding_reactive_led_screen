@@ -1,0 +1,6 @@
+.afterglow-data
+.env*
+test
+test-results
+node_modules
+.git

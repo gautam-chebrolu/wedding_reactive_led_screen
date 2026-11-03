@@ -1,0 +1,14 @@
+{
+  "name": "wedding-ledscreen-background",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "An offline-ready, music-reactive visual stage for a wedding LED wall.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=18" }
+}

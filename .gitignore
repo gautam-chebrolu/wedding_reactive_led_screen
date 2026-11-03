@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+test-results/
+*.local
+.afterglow-data/
+.env
+.env.*
+!.env.example
+.vercel/
+dist/

@@ -8,6 +8,8 @@ import { thumbnail } from './thumbnails.js';
 import { PortraitRoster } from './portraits.js';
 import { SharedShow } from './show-client.js';
 import { mountSharedShowUI } from './show-ui.js';
+import { MemoryAlbum } from './memories.js';
+import { sceneShortcuts } from './scene-ids.js';
 
 const $ = id => document.getElementById(id);
 const settings = loadSettings();
@@ -15,6 +17,10 @@ const audio = new AudioEngine(syncSourceStatus);
 const camera = new CameraInput(syncCameraStatus);
 const renderer = new Renderer($('visual-canvas'), $('stage'), settings);
 const portraits = new PortraitRoster(settings);
+const memories = new MemoryAlbum({ onChange: album => {
+  $('memory-status').textContent = album.status;
+  $('refresh-memories').disabled = album.loading;
+} });
 const portraitURLs = new Set();
 const shared = new SharedShow({ onState: applyRemoteSnapshot, onStatus: syncRemoteStatus, onTelemetry: syncRemoteTelemetry });
 let remoteRoom = '', remoteCue = null, remoteClock = '', mediaLoading = false, mediaDirty = false, lastTelemetry = 0, lastRemoteBeat = -1;
@@ -107,9 +113,9 @@ $('connect-camera').addEventListener('click', async () => {
 });
 $('stop-camera').addEventListener('click', () => camera.stop());
 
-const rangeKeys = ['sensitivity', 'intensity', 'brightness', 'mouthX', 'mouthY', 'mouthWidth', 'mouthHeight', 'mouthAngle', 'motionThreshold', 'ballGravity', 'dvdSpeed'];
+const rangeKeys = ['sensitivity', 'intensity', 'brightness', 'mouthX', 'mouthY', 'mouthWidth', 'mouthHeight', 'mouthAngle', 'motionThreshold', 'ballGravity', 'dvdSpeed', 'hyperspaceSpeed'];
 function formatSetting(key) {
-  if (['sensitivity', 'ballGravity'].includes(key)) return `${settings[key].toFixed(2).replace(/0$/, '')}×`;
+  if (['sensitivity', 'ballGravity', 'hyperspaceSpeed'].includes(key)) return `${settings[key].toFixed(2).replace(/0$/, '')}×`;
   if (key === 'mouthAngle') return `${settings[key]}°`;
   if (key === 'motionThreshold') return Math.round(settings[key]);
   if (key === 'dvdSpeed') return `${Math.round(settings[key] * 100)}%`;
@@ -118,7 +124,7 @@ function formatSetting(key) {
 function syncSettings() {
   for (const key of rangeKeys) { $(key).value = settings[key]; $(`${key}-value`).textContent = formatSetting(key); }
   for (const key of ['autoCycle', 'reducedMotion', 'mirror', 'portraitCycle']) $(key).checked = settings[key];
-  for (const key of ['cycleSeconds', 'resolution', 'cameraEffect', 'portraitCycleSeconds', 'kaleidoSegments']) {
+  for (const key of ['cycleSeconds', 'resolution', 'cameraEffect', 'portraitCycleSeconds', 'kaleidoSegments', 'memoryBeats', 'memoryCount', 'rangoliPetals', 'tunnelShape', 'liquidMaterial', 'tunakMode', 'tunakRate']) {
     const select = $(key);
     if (![...select.options].some(option => option.value === String(settings[key]))) select.add(new Option(`${settings[key]} sec`, settings[key]));
     select.value = settings[key];
@@ -137,7 +143,7 @@ for (const key of ['autoCycle', 'reducedMotion', 'mirror', 'portraitCycle']) $(k
   if (key === 'portraitCycle') portraits.lastChange = performance.now();
   persistSettings([key]);
 });
-for (const key of ['cycleSeconds', 'resolution', 'cameraEffect', 'portraitCycleSeconds', 'kaleidoSegments']) $(key).addEventListener('change', event => {
+for (const key of ['cycleSeconds', 'resolution', 'cameraEffect', 'portraitCycleSeconds', 'kaleidoSegments', 'memoryBeats', 'memoryCount', 'rangoliPetals', 'tunnelShape', 'liquidMaterial', 'tunakMode', 'tunakRate']) $(key).addEventListener('change', event => {
   settings[key] = ['cycleSeconds', 'portraitCycleSeconds'].includes(key) ? Number(event.target.value) : event.target.value;
   if (key === 'portraitCycleSeconds') portraits.lastChange = performance.now();
   persistSettings([key]); if (key === 'resolution') renderer.resize();
@@ -149,7 +155,7 @@ for (const [id, palette] of Object.entries(palettes)) {
 }
 sceneRegistry.forEach((scene, i) => {
   const button = document.createElement('button'); button.className = 'scene-card'; button.dataset.scene = scene.id;
-  button.innerHTML = `<span class="scene-thumbnail">${thumbnail(scene.id)}</span><kbd class="scene-shortcut">${i + 1}</kbd><span class="scene-info"><strong>${scene.name}</strong><small>${scene.type}</small></span>`;
+  button.innerHTML = `<span class="scene-thumbnail">${thumbnail(scene.id)}</span><kbd class="scene-shortcut">${sceneShortcuts[i].toUpperCase()}</kbd><span class="scene-info"><strong>${scene.name}</strong><small>${scene.type}</small></span>`;
   button.addEventListener('click', () => chooseScene(scene.id)); $('scene-grid').append(button);
 });
 $('scene-count').textContent = `${sceneRegistry.length} SCENES`;
@@ -169,9 +175,11 @@ function syncScene() {
   $('scene-description').textContent = scene.description; $('scene-setup-tag').textContent = scene.id.toUpperCase();
   $('moon-controls').hidden = scene.id !== 'moon'; $('portrait-controls').hidden = scene.id !== 'portrait';
   $('camera-controls').hidden = !scene.needsCamera; $('remix-controls').hidden = scene.id !== 'camera'; $('ball-controls').hidden = scene.id !== 'ball';
-  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel', 'pg-camera']) $(`${id}-controls`).hidden = scene.id !== id;
+  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel', 'pg-camera', 'memories', 'rangoli', 'mehndi', 'baraat', 'kellogg', 'hyperspace', 'liquid', 'tunak']) $(`${id}-controls`).hidden = scene.id !== id;
   renderer.canvas.style.cursor = scene.id === 'portrait' ? 'crosshair' : scene.id === 'ball' ? 'none' : 'default';
 }
+
+$('refresh-memories').addEventListener('click', () => memories.refresh());
 
 function syncPortraitRoster() {
   const select = $('portrait-person'); select.replaceChildren();
@@ -293,7 +301,7 @@ function handleKey(event, fromOutput = false) {
   if (!fromOutput && (event.key === ' ' || event.key === 'Enter') && ['BUTTON', 'SUMMARY', 'A'].includes(tag)) return;
   const key = event.key.toLowerCase();
   if (shared.isWall && !['f', 'h', 'escape'].includes(key)) return;
-  if (/^[1-9]$/.test(key) && sceneRegistry[Number(key) - 1]) chooseScene(sceneRegistry[Number(key) - 1].id);
+  if (sceneShortcuts.includes(key)) chooseScene(sceneRegistry[sceneShortcuts.indexOf(key)].id);
   else if (key === ' ' || key === 'arrowright') { event.preventDefault(); nextScene(); }
   else if (key === 'arrowleft') { event.preventDefault(); nextScene(-1); }
   else if (key === 'b') toggleBlackout();
@@ -428,12 +436,13 @@ function frame(now) {
   }
   if (!shared.connected && portraits.tick(now, settings.scene === 'portrait')) { syncSettings(); syncPortraitRoster(); persistSettings(); }
   if (camera.ready && ['camera', 'ball'].includes(settings.scene)) camera.update(now, settings, renderer.canvas.width / renderer.canvas.height);
-  try { renderer.render({ time: now / 1000, dt, audio: features, camera, portrait: portraits.current?.image || null }); }
+  memories.tick(now, settings.scene === 'memories');
+  try { renderer.render({ time: now / 1000, dt, audio: features, camera, portrait: portraits.current?.image || null, memories }); }
   catch (error) { if (!errorReported) { errorReported = true; toast(`A scene could not be rendered: ${error.message}. Try another scene or reload.`, true); console.error(error); } }
   if (now - lastMeters > 90) { updateMeters(features, fps); lastMeters = now; }
   requestAnimationFrame(frame);
 }
-window.addEventListener('pagehide', () => { shared.disconnect(); audio.stop(); camera.stop(); output.close(); for (const url of portraitURLs) URL.revokeObjectURL(url); });
+window.addEventListener('pagehide', () => { shared.disconnect(); memories.stop(); audio.stop(); camera.stop(); output.close(); for (const url of portraitURLs) URL.revokeObjectURL(url); });
 const showUI = mountSharedShowUI({
   shared, settings, toast, fullscreen,
   onConnect: () => {
@@ -443,7 +452,7 @@ const showUI = mountSharedShowUI({
     $('privacy-label').textContent = 'Audio/video stay local · shared portraits are stored with this show';
     applyRemoteSnapshot({ ...shared.snapshot, state: shared.state }); syncSourceStatus();
   },
-  onLeave: () => { audio.demo(); syncSourceStatus(); persistSettings(); $('privacy-label').textContent = 'Runs locally. Your media stays with you.'; },
+  onLeave: () => { audio.demo(); syncSourceStatus(); persistSettings(); $('privacy-label').textContent = 'Audio/video stay local. Guest photos stream from the album.'; },
   startInput: async (mode, device, file) => {
     if (mode === 'microphone') await audio.microphone(device);
     else if (mode === 'shared') await audio.sharedAudio();

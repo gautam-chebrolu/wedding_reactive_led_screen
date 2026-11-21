@@ -32,7 +32,7 @@ function wavBuffer() {
   return data;
 }
 try {
-  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 9); await waitForScene();
+  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17); await waitForScene();
   assert.equal(await page.title(), 'Afterglow · A visual soundtrack');
   assert.ok((await canvasPixel()).bright > 50, 'Moon scene has visible rendered detail');
   await page.screenshot({ path: 'test-results/desktop.png', fullPage: true });
@@ -40,6 +40,11 @@ try {
 
   await page.locator('[data-scene="portrait"]').click(); await waitForScene();
   const png = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 300; c.height = 400; const x = c.getContext('2d'); x.fillStyle = '#e7ac87'; x.fillRect(0, 0, 300, 400); return c.toDataURL().split(',')[1]; });
+  // Synthetic album keeps browser QA independent of guest data and internet.
+  let albumEnabled = true;
+  await context.route('**/api/memories/**', route => route.fulfill(route.request().url().includes('/gallery')
+    ? { contentType: 'application/json', body: JSON.stringify({ galleryEnabled: albumEnabled, items: albumEnabled ? Array.from({ length: 15 }, (_, i) => ({ id: `qa-memory-${i}` })) : [], next: null }) }
+    : { contentType: 'image/png', body: Buffer.from(png, 'base64') }));
   await page.locator('#portrait-file').setInputFiles({ name: 'test-portrait.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
   await page.waitForFunction(() => document.getElementById('portrait-name').textContent.startsWith('test-portrait'));
   await page.locator('#visual-canvas').click({ position: { x: 480, y: 290 } });
@@ -102,8 +107,21 @@ try {
   assert.equal(await page.locator('#tempo-label').textContent(), 'TAPPED TEMPO');
   await page.locator('#first-beat').click(); await page.locator('#auto-tempo').click();
   await page.locator('h1').click(); await page.keyboard.press('1'); await waitForScene();
-  await page.keyboard.press('b'); assert.equal((await canvasPixel()).sum, 0, 'Blackout affects the actual output canvas');
-  await page.keyboard.press('b'); assert.ok((await canvasPixel()).sum > 0);
+  await page.keyboard.press('b');
+  // The key changes show state; requestAnimationFrame paints the next canvas.
+  await page.waitForFunction(() => {
+    const c = document.getElementById('visual-canvas'), pixels = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    for (let i = 0; i < pixels.length; i += 400) if (pixels[i] || pixels[i + 1] || pixels[i + 2]) return false;
+    return true;
+  });
+  assert.equal((await canvasPixel()).sum, 0, 'Blackout affects the actual output canvas');
+  await page.keyboard.press('b');
+  await page.waitForFunction(() => {
+    const c = document.getElementById('visual-canvas'), pixels = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    for (let i = 0; i < pixels.length; i += 400) if (pixels[i] || pixels[i + 1] || pixels[i + 2]) return true;
+    return false;
+  });
+  assert.ok((await canvasPixel()).sum > 0);
   await page.keyboard.press('Space'); assert.equal(await page.locator('#stage-name').textContent(), 'The headliner');
   await page.keyboard.press('h'); assert.ok(await page.locator('body').evaluate(el => el.classList.contains('presentation')));
   await page.keyboard.press('Escape');
@@ -140,18 +158,35 @@ try {
   console.log('PASS: chapel window rendering reacts to music pulses');
 
 
+  await page.locator('h1').click(); await page.keyboard.press('0');
+  await page.waitForFunction(() => document.getElementById('memory-status').textContent.startsWith('15 approved'));
+  assert.equal(await page.locator('#memories-controls').isVisible(), true);
+  await page.locator('#memoryBeats').selectOption('1'); await page.locator('#memoryCount').selectOption('6');
+  await page.waitForTimeout(3600);
+  assert.ok((await canvasPixel()).bright > 100, 'Approved photo pixels render without tainting the canvas');
+  await page.screenshot({ path: 'test-results/memories.png', fullPage: true });
+  await page.locator('#reducedMotion').check();
+  await page.screenshot({ path: 'test-results/memories-gentle.png', fullPage: true });
   const popupEvent = page.waitForEvent('popup'); await page.locator('#output-button').click();
   const popup = await popupEvent;
   await popup.waitForFunction(() => document.querySelector('video')?.readyState >= 2);
   assert.equal(await popup.locator('canvas').count(), 0); assert.equal(await popup.locator('video').count(), 1);
-  await popup.setViewportSize({ width: 1280, height: 360 }); await page.waitForTimeout(400);
+  await popup.setViewportSize({ width: 1280, height: 360 });
+  await page.waitForFunction(() => {
+    const canvas = document.getElementById('visual-canvas');
+    return Math.abs(canvas.width / canvas.height - 32 / 9) < 0.02;
+  });
   const aspect = await page.locator('#visual-canvas').evaluate(el => el.width / el.height);
   assert.ok(Math.abs(aspect - 32 / 9) < 0.02, 'Output adapts to a wide LED wall');
   await popup.close();
-  console.log('PASS: separate live output and wide wall ratio');
+  albumEnabled = false; await page.locator('#refresh-memories').click();
+  await page.waitForFunction(() => document.getElementById('memory-status').textContent.includes('closed'));
+  albumEnabled = true; await page.locator('#refresh-memories').click();
+  await page.waitForFunction(() => document.getElementById('memory-status').textContent.startsWith('15 approved'));
+  console.log('PASS: approved guest photos, gallery closure/reopening, untainted separate output and wide wall ratio');
 
   await page.locator('[data-palette="rose"]').click();
-  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 9);
+  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17);
   assert.equal(await page.locator('#palette-name').textContent(), 'Rose quartz');
   await page.locator('#help-button').click(); assert.ok(await page.locator('#help-dialog').evaluate(el => el.open)); await page.locator('#help-done').click();
   await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);

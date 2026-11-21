@@ -14,13 +14,16 @@ export const defaults = {
   mouthWidth: 0.18, mouthHeight: 0.12, mouthAngle: 0,
   cameraEffect: 'prism', mirror: true, motionThreshold: 28, ballGravity: 0.65,
   portraitCycle: false, portraitCycleSeconds: 12, portraitId: '', portraitMouths: {},
-  dvdSpeed: 0.18, kaleidoSegments: '12'
+  dvdSpeed: 0.18, kaleidoSegments: '12', memoryBeats: '4',
+  // Preserve saved/shared presets: the old photo counts now select print sizes.
+  memoryCount: '9', rangoliPetals: '16', hyperspaceSpeed: 0.8, tunnelShape: 'hexagons',
+  liquidMaterial: 'chrome', tunakMode: 'takeover', tunakRate: '1'
 };
 const ranges = {
   sensitivity: [0.3, 4], intensity: [0, 1], brightness: [0, 1], cycleSeconds: [15, 300],
   mouthX: [0, 1], mouthY: [0, 1], mouthWidth: [0.02, 0.6], mouthHeight: [0.01, 0.4],
   mouthAngle: [-60, 60], motionThreshold: [8, 80], ballGravity: [0.2, 1.5],
-  portraitCycleSeconds: [3, 120], dvdSpeed: [0.05, 0.6]
+  portraitCycleSeconds: [3, 120], dvdSpeed: [0.05, 0.6], hyperspaceSpeed: [0.25, 2]
 };
 export function sanitizeSettings(input) {
   const result = { ...defaults, portraitMouths: {} };
@@ -30,7 +33,7 @@ export function sanitizeSettings(input) {
     if (ranges[key] && typeof value === 'number' && Number.isFinite(value)) result[key] = Math.max(ranges[key][0], Math.min(ranges[key][1], value));
     else if (typeof original === 'boolean' && typeof value === 'boolean') result[key] = value;
   }
-  for (const [key, choices] of Object.entries({ scene: sceneIds, palette: Object.keys(palettes), resolution: ['1280', '1920', '2560'], cameraEffect: ['prism', 'echo', 'kaleidoscope'], kaleidoSegments: ['8', '12', '16'] })) {
+  for (const [key, choices] of Object.entries({ scene: sceneIds, palette: Object.keys(palettes), resolution: ['1280', '1920', '2560'], cameraEffect: ['prism', 'echo', 'kaleidoscope'], kaleidoSegments: ['8', '12', '16'], memoryBeats: ['1', '2', '4', '8'], memoryCount: ['6', '9', '12'], rangoliPetals: ['12', '16', '24'], tunnelShape: ['rings', 'hexagons'], liquidMaterial: ['chrome', 'silk'], tunakMode: ['solo', 'takeover'], tunakRate: ['1', '2'] })) {
     if (choices.includes(input[key])) result[key] = input[key];
   }
   if (typeof input.portraitId === 'string' && input.portraitId.length <= 300) result.portraitId = input.portraitId;

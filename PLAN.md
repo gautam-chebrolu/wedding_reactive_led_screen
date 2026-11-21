@@ -2,7 +2,7 @@
 
 ## Experience
 
-A local browser app, operated from a laptop with a clean visual output on an extended-display LED wall. Music supplies the movement; each scene has a distinct focal point. All rendering, analysis, camera processing, and uploaded media stay on the device. No account, API key, model download, CDN, or build step is required.
+A local browser app, operated from a laptop with a clean visual output on an extended-display LED wall. Music supplies the movement; each scene has a distinct focal point. Rendering, analysis and camera processing stay on the device. Shared portraits use the show server; the guest photo wall reads the existing approved album. No account, API key, model download, CDN, or build step is required.
 
 ## Implementation plan
 
@@ -17,6 +17,8 @@ A local browser app, operated from a laptop with a clean visual output on an ext
 9. **Expanded scene library.** Standalone procedural kaleidoscope (no camera), original PG SVG rendered in gold on black with beat pulses, and a DVD-logo bounce with collision-driven colors and beat-driven scale. Existing scene order stays stable; shortcuts 5–7 select additions.
 10. **Portrait cast.** Discover permanent images in `assets/portraits/`, allow multiple session uploads, and add previous/next and timed cycling. Save each person's mouth calibration in exported/browser settings. Folder images reload automatically; session uploads remain memory-only. The default `gautam.*` image is first in discovery order.
 11. **Shared shows without Firebase.** Server-authenticated controller passwords, a separate read-only wall key, live settings/cues, shared portrait storage, server-anchored cycling/tempo, reconnect handling and DJ-local audio/camera. Vercel Functions use a Redis REST storage adapter and short polling; the standalone server uses private files and SSE. Include Vercel build/routing configuration and deployment instructions. No changes to the existing wedding Firestore project.
+
+12. **Guest memories on the beat.** Reuse the photo app's approved public feed and deterministic scatter concept in a fixed Canvas scene. Preserve full image proportions, place one photo every configurable beat interval, use a silence fallback, reconcile approvals on a 30-second poll, and bound thumbnail decoding/cache size. Share scene controls through existing settings; the DJ device drives actual beat timing.
 
 ## First-release boundaries
 

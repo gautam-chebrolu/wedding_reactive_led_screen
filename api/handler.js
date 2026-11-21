@@ -2,6 +2,7 @@ import path from 'node:path';
 import { ShowAPI } from '../server/show-api.js';
 import { RedisShowStore } from '../server/redis-store.js';
 import { listPortraitFiles } from '../src/portrait-files.js';
+import { handlePhotoAPI } from '../server/photo-api.js';
 
 let service;
 async function getService() {
@@ -20,6 +21,7 @@ export default async function handler(req, res) {
     const url = new URL(req.url, 'https://afterglow.invalid');
     const route = req.query?.route || url.searchParams.get('route');
     if (typeof route === 'string') url.pathname = `/api/${route}`;
+    if (await handlePhotoAPI(req, res, url)) return;
     if (url.pathname === '/api/portraits' && ['GET', 'HEAD'].includes(req.method)) {
       const portraits = await listPortraitFiles(path.join(process.cwd(), 'assets/portraits'));
       res.setHeader('Content-Type', 'application/json'); res.statusCode = 200; res.end(JSON.stringify(portraits)); return;

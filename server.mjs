@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { listPortraitFiles } from './src/portrait-files.js';
 import { ShowAPI } from './server/show-api.js';
+import { handlePhotoAPI } from './server/photo-api.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
@@ -17,6 +18,7 @@ export async function createAppServer(options = {}) {
     try {
       const url = new URL(req.url, 'http://localhost');
       if (url.pathname === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }).end('ok'); return; }
+      if (await handlePhotoAPI(req, res, url, options.photos)) return;
       if (await api.handle(req, res, url)) return;
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end('Method not allowed'); return; }
       const pathname = decodeURIComponent(url.pathname);

@@ -1,14 +1,14 @@
 # Afterglow
 
-A music-reactive visual stage for a wedding LED wall. Seven scenes, one shared audio engine, and a separate clean output window. Runs locally with no runtime dependencies, accounts, API keys, build step, or internet connection.
+A music-reactive visual stage for a wedding LED wall. Seventeen scenes, one shared audio engine, and a separate clean output window. Local rendering needs no runtime dependencies, accounts, API keys or build step. The guest photo scene streams the approved album over the internet; the other scenes work offline.
 
 ## Run it
 
 Requires Node.js 18 or newer.
 
-```sh
-cd /Users/gautam/Documents/repos/wedding_ledscreen_background
-npm start
+```powershell
+cd D:\Scripting\wedding\wedding_reactive_led_screen
+npm.cmd start
 ```
 
 Open **http://localhost:4173**. No `npm install` is needed. Start with the silent demo signal, which simulates music at 112 BPM. Stop the server with Ctrl+C. To change the port, use `PORT=4174 npm start`.
@@ -19,7 +19,7 @@ Use a Chromium browser for the first hardware rehearsal. The code uses standard 
 
 **Shared show** creates separate links: a read-only wall for the DJ and a password-protected controller for your phone or another operator. Visual settings, blackout, tap tempo, resets and portraits sync between devices. The DJ enables audio/camera on his device; those media streams stay there. Several controllers can share the show password.
 
-For your **Vercel** deployment, see [DEPLOYMENT.md](DEPLOYMENT.md). The included build/API configuration uses an **Upstash Redis** store connected through Vercel Storage and a private `AFTERGLOW_SETUP_KEY` environment variable. Firebase is not used. Vercel pages poll small show snapshots about every 750 ms; the wall renders continuously and keeps its last settings through network interruptions. Local development uses private files and live SSE without Redis. After deployment, use **Shared show → Create a show**, then copy its wall/controller links.
+For your **Vercel** deployment, see [DEPLOYMENT.md](DEPLOYMENT.md). The included build/API configuration uses an **Upstash Redis** store connected through Vercel Storage and a private `AFTERGLOW_SETUP_KEY` environment variable. Shared-show state does not use Firebase; the guest photo scene reads the existing Firebase-hosted photo app. Vercel pages poll small show snapshots about every 750 ms; the wall renders continuously and keeps its last settings through network interruptions. Local development uses private files and live SSE without Redis. After deployment, use **Shared show → Create a show**, then copy its wall/controller links.
 
 ## What is implemented
 
@@ -34,8 +34,41 @@ For your **Vercel** deployment, see [DEPLOYMENT.md](DEPLOYMENT.md). The included
 | One perfect corner | Your supplied PG Video logo bouncing on black | Changes color at the walls and pulses on the beat | Set bounce speed; R restarts it |
 | Smile, you’re on PG Camera | Plain live webcam inside a gold “Smile, you're on PG Camera” border | Natural video; no color treatment or beat zoom | Enable camera; optional mirror |
 | Duke Chapel, after dark | Original front-facing vector illustration of Duke Chapel beneath a night sky | Window groups flash and trade colors with the beat | Works offline; reactivity and Gentle motion control the light show |
+| Through your eyes | Approved guest photos scattered on a sage tabletop | A photo settles onto the table every 1, 2, 4 or 8 beats | Connects to the existing guest album automatically |
+
+| PG Rangoli | Your PG monogram surrounded by gold filigree on emerald | Bass expands the petals; beats illuminate the outer dots | Q · choose 12, 16 or 24 petals |
+| Mehndi After Dark | Henna vines, paisleys and dotted ornament | Vines unfurl and accents send light through the ink | W |
+| Neon Baraat | Dancing silhouettes, tassels and oversized dhols | Drum skins and sticks respond to bass and beats | E |
+| Kellogg After Hours | The Kellogg Global Hub beside Lake Michigan | Purple window lights pass between the curved glass wings | A |
+| Hyperspace | Neon portals and star trails | Bass accelerates the flight; beats brighten the portals | S · rings/hexagons and flight speed |
+| Liquid Chrome / Silk | Sculpted metallic or iridescent surfaces | Bass reshapes the folds and percussion adds shimmer | D · chrome/silk |
+| Tunak Takeover | Custom Daler Mehndi artwork with a separate head layer | A springy neck nod and shoulder bounce on live beats | Z · solo/takeover and every beat/every other beat |
 
 There are four color palettes, reactivity and brightness controls, a gentle-motion option, scene transitions, timed cycling, tap tempo, a blackout switch, render resolution selection, and settings import/export. Camera scenes join auto-cycle only after a camera is enabled.
+
+## The new celebration scenes
+
+The seven new looks work offline with the existing demo, microphone, mixer, shared-tab and local-file inputs. Use **Q / W / E / A / S / D / Z** or their scene cards. Their controls persist in exported settings and synchronize to shared walls. Gentle motion reduces the movement and beat response; Reactivity controls the musical accents.
+
+**Kellogg After Hours** is an original illustration of the Global Hub, including its curved glass wings and lakefront plaza, with a Lake Michigan reflection. It uses the [official Global Hub reference](https://www.kellogg.northwestern.edu/the-experience/campuses/global-hub/), rather than a Chicago skyline.
+
+**Liquid Chrome / Silk** renders an analytic reflective surface using a bundled WebGL shader, with a Canvas ribbon fallback when a GPU context is unavailable. Its internal pixel budget is bounded independently of the wall resolution. **Tunak Takeover** uses a bundled transparent sprite atlas; its head and shoulders are animated independently. Select Solo or Takeover and a nod on every beat or every other beat. It responds to any music and does not automatically recognize the Tunak song. Artwork provenance and the generation prompt are in [assets/tunak/README.md](assets/tunak/README.md).
+
+After adding these scenes to an already-running local server, restart **npm.cmd start** once so shared-show scene validation loads the expanded registry, then refresh the browser.
+
+## Guest photo wall
+
+Choose **Through your eyes** or press **0**. It uses the same public, organizer-approved gallery as `wedding_photos` and its memory wall, including approved texted photos. No login or guest phone numbers are needed. The default source is `https://priya-gautam-photos.web.app`; the organizer's **Show approved photos** switch must be on.
+
+In **Scene setup**, choose Extra large, Large or Medium **Print size** and an arrival every 1, 2, 4 or 8 detected/tapped beats (default: Large, every 4 beats). The first photo appears as soon as it loads. Large prints tumble onto the tabletop with varied rotation and overlap, spreading across the screen and continually landing on top of earlier photos. The album loops even when it has only a few photos. Each image keeps its proportions and existing frame; prints near the table edges can extend beyond the screen. The deepest layers retire after 36 arrivals, and the settled pile is cached so long shows stay responsive. Saved presets retain their size choice using the previous 6/9/12 values. Gentle motion removes the slide/zoom/pulse and spaces arrivals at least 2 seconds apart. Without detected beats for 6 seconds, the scene uses a 6-second fallback. Use the DJ's input or tap **T** for consistent musical timing.
+
+Photo order is shuffled independently on every pass. Each available photo gets a turn before the next pass, and consecutive arrivals avoid repeating the same photo when there is more than one. New approvals join the current shuffle; refreshing the album does not restart its order. Initial thumbnail downloads are mixed too, so the opening photos can come from anywhere in the loaded album.
+
+The scene checks for approvals/removals every 30 seconds while active; **Refresh photos** checks immediately. Successful refreshes remove revoked photos, and closing the gallery clears the photos. During a connection failure it keeps its last successfully loaded images and reports the error in Scene setup. It loads up to the latest 90 approved photos with four concurrent thumbnail downloads to bound memory and bandwidth. Larger albums rotate within that latest set.
+
+Both the Node server and Vercel function expose a read-only `/api/memories/` bridge to the existing public photo endpoints. Same-origin thumbnails keep the canvas usable in **Open wall output**. Requests do not forward show credentials or permit uploads. The scene works in local mode, shared walls and camera-free auto-cycling; settings sync to the DJ, whose local audio drives the actual wall. In shared mode, the controller preview arranges its own photos and does not promise identical frame timing to the wall.
+
+No deployment changes to the photo backend are required. To override the source, set server-side `PHOTOS_ORIGIN` to the photo app's HTTPS origin. For the synthetic demo, use `http://127.0.0.1:4312`. A generic static file host alone cannot serve this bridge.
 
 ## Portrait roster and default photo
 
@@ -104,7 +137,8 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 
 | Key | Action |
 | --- | --- |
-| 1–9 | Choose a scene (5 kaleidoscope, 6 PG gold, 7 PG Video, 8 PG Camera, 9 Duke Chapel) |
+| 1–9, 0 | Choose a scene (5 kaleidoscope, 6 PG gold, 7 PG Video, 8 PG Camera, 9 Duke Chapel, 0 guest photos) |
+| Q / W / E / A / S / D / Z | Rangoli / Mehndi / Baraat / Kellogg / Hyperspace / Liquid / Tunak |
 | [ / ] | Previous / next portrait person |
 | Space / Right arrow | Next scene |
 | Left arrow | Previous scene |
@@ -164,7 +198,7 @@ The shared `audio` frame contains:
 | `manual`, `beatInBar` | Manual clock active; beat 1–4 only in manual mode (otherwise 0) |
 | `spectrum` | 64 frequency values, 0–255, for additional effects |
 
-Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current nine-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js` (and `cameraSceneIds` there if it needs a camera for shared-show cycling). Scene counts and available numeric shortcuts are derived from the registry. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
+Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current seventeen-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js` (and `cameraSceneIds` there if it needs a camera for shared-show cycling). Scene counts come from the registry; sceneShortcuts in scene-ids.js maps each scene to a unique numeric or letter key. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
 
 ## Validation
 
@@ -172,7 +206,7 @@ Render in the supplied dimensions rather than hardcoding a ratio. Paint the whol
 npm test
 ```
 
-Uses Node's built-in runner to test silence/sustained tones, regular kick tempo, duplicate onset suppression, manual clock behavior, cancelled microphone requests, input track cleanup, no microphone speaker routing, motion sampling/exposure compensation, ball saves/loss/boundaries, crop mapping and imported settings validation. Additional tests cover per-person calibration, saved selection, timed portrait rotation, failed/duplicate image loads, safe portrait-folder discovery, PG Video wall/corner reflections, pulse-aware bounds and the expanded scene registry, camera-aware shared cycling and chapel window lighting. No dependencies are required for these tests.
+Uses Node's built-in runner to test silence/sustained tones, regular kick tempo, duplicate onset suppression, manual clock behavior, cancelled microphone requests, input track cleanup, no microphone speaker routing, motion sampling/exposure compensation, ball saves/loss/boundaries, crop mapping and imported settings validation. Additional tests cover per-person calibration, saved selection, timed portrait rotation, failed/duplicate image loads, safe portrait-folder discovery, PG Video wall/corner reflections, pulse-aware bounds and the expanded scene registry, camera-aware shared cycling and chapel window lighting. Photo tests also cover beat spacing, silence fallback, photo proportions and wall ratios, approval/removal reconciliation, bounded decoding, public proxy routes and shared settings. No dependencies are required for these tests.
 
 An optional browser smoke script is at `test/browser-check.mjs`. With a separately installed Playwright module and Chromium, run it against the local server:
 
@@ -191,3 +225,5 @@ You can provide `BROWSER_EXECUTABLE` to use an existing compatible Chromium bina
 
 The first-release ball interaction detects changed pixels, not hands, faces or skeletons. Pose tracking, MIDI/OSC clocks and song cue lists are good future extensions after a venue rehearsal establishes what needs improvement.
 # wedding_reactive_led_screen
+
+The optional `node test/celebration-browser.mjs` starts an isolated localhost server and verifies all seven additions: real canvas pixels, reactivity, controls/persistence, letter shortcuts, shader/fallback rendering, wide/portrait sizes and mobile layout. It accepts the same PLAYWRIGHT_MODULE and BROWSER_EXECUTABLE variables as the general browser smoke script. Screenshots are saved under test-results/new-scenes/.

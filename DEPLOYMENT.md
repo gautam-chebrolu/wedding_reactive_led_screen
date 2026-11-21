@@ -4,7 +4,7 @@ The Vercel deployment serves the app and its authenticated API. A small **Upstas
 
 ## One-time Vercel setup
 
-1. Import/deploy this folder as a Vercel project. If the Git repository contains other projects, set **Root Directory** to `wedding_ledscreen_background`.
+1. Import/deploy this folder as a Vercel project. If the Git repository contains other projects, set **Root Directory** to `wedding_reactive_led_screen`.
 2. Select **Other** as the framework preset. The included `vercel.json` sets Build Command to `npm run build` and Output Directory to `dist`. Use a supported current Node.js runtime, such as Node 22. There are no npm runtime dependencies.
 3. In the Vercel project's **Storage / Marketplace** area, connect an **Upstash Redis** database to this project. Enable its environment variables for Production (and Preview if you want preview URLs to support shared shows). The app accepts either pair:
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN`
@@ -32,6 +32,7 @@ The wall link grants **read-only viewing** and the ability to report input statu
 
 ## What moves across the network
 
+- **Guest memories:** the Through your eyes scene reads the existing approved photo album through `/api/memories/`. It defaults to `https://priya-gautam-photos.web.app` and needs no Firebase credentials or Redis configuration. Optional server-side `PHOTOS_ORIGIN` selects a different photo-app origin. The organizer's **Show approved photos** switch governs both listing and image access. The wall checks approvals every 30 seconds while the scene is active and keeps up to 90 thumbnails in memory. Scene density and beat spacing sync through show settings; the DJ's local audio determines arrivals. The controller preview does not reproduce the exact photo arrangement or every beat.
 - **Settings and cues:** small authenticated requests and snapshots. On Vercel, each connected page polls about every 750 ms after the preceding request completes. Rendering remains local and continuous; this is settings synchronization rather than a video stream. Latency includes your network and database region.
 - **Portraits:** bundled folder portraits, including Gautam's default, ship with the app. Images added after joining as a controller upload to the show's private storage and download to its wall and other controllers. Shared uploads support JPG, PNG and WebP, up to 3 MB each and 50 per show. Shared image routes require a valid show token. Local session uploads made before joining do not automatically become shared: add them again after connecting.
 - **Audio/camera:** audio samples and camera frames stay on the DJ's device. It reports a small set of signal meters and input status once per second. The controller preview can use these delayed signal levels; it does not stream the DJ's camera or reproduce every animation frame. Audio devices, camera permission, local track selection/playback, and fullscreen must be operated on the DJ's computer.

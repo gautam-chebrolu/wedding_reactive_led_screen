@@ -56,7 +56,7 @@ test('gold/DVD scale follows beat pulses and respects gentle motion and reactivi
   assert.equal(pulseScale({ pulse: 1 }, { ...settings, intensity: 0 }), 1);
 });
 
-test('all nine scenes persist and scenes without camera inputs stay independent', () => {
+test('all scenes persist and scenes without camera inputs stay independent', () => {
   assert.deepEqual(sceneRegistry.map(scene => scene.id), sceneIds);
   for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel']) {
     assert.equal(sanitizeSettings({ scene: id }).scene, id);

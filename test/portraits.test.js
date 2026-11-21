@@ -61,7 +61,9 @@ test('folder discovery only includes supported images, orders the default first 
   const dir = await mkdtemp(path.join(tmpdir(), 'afterglow-portraits-'));
   try {
     await Promise.all(['z-person.JPG', 'gautam.jpg', 'priya #1.png', '.hidden.png', 'notes.txt', 'unsupported.svg'].map(file => writeFile(path.join(dir, file), 'fixture')));
-    await mkdir(path.join(dir, 'folder.jpg')); await symlink(path.join(dir, 'gautam.jpg'), path.join(dir, 'linked.jpg'));
+    await mkdir(path.join(dir, 'folder.jpg'));
+    try { await symlink(path.join(dir, 'gautam.jpg'), path.join(dir, 'linked.jpg')); }
+    catch (error) { if (process.platform !== 'win32' || !['EPERM', 'EACCES'].includes(error.code)) throw error; }
     const found = await listPortraitFiles(dir);
     assert.equal(found.length, 3); assert.equal(found[0].id, 'gautam.jpg');
     assert.equal(found[1].src, '/assets/portraits/priya%20%231.png'); assert.equal(found[2].name, 'Z Person');

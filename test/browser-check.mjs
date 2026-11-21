@@ -32,7 +32,7 @@ function wavBuffer() {
   return data;
 }
 try {
-  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17); await waitForScene();
+  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 18); await waitForScene();
   assert.equal(await page.title(), 'Afterglow · A visual soundtrack');
   assert.ok((await canvasPixel()).bright > 50, 'Moon scene has visible rendered detail');
   await page.screenshot({ path: 'test-results/desktop.png', fullPage: true });
@@ -186,7 +186,7 @@ try {
   console.log('PASS: approved guest photos, gallery closure/reopening, untainted separate output and wide wall ratio');
 
   await page.locator('[data-palette="rose"]').click();
-  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17);
+  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 18);
   assert.equal(await page.locator('#palette-name').textContent(), 'Rose quartz');
   await page.locator('#help-button').click(); assert.ok(await page.locator('#help-dialog').evaluate(el => el.open)); await page.locator('#help-done').click();
   await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);

@@ -36,7 +36,7 @@ export function validateShowPatch(patch) {
     if (Object.keys(tempo).some(key => !['bpm', 'anchorAt'].includes(key))) invalid('Invalid tempo fields.');
   }
   if (Object.hasOwn(patch, 'cue')) {
-    if (!patch.cue || !/^[a-zA-Z0-9_-]{10,80}$/.test(patch.cue.id) || !['reset-ball', 'reset-dvd'].includes(patch.cue.type) || Object.keys(patch.cue).some(key => !['id', 'type'].includes(key))) invalid('Invalid show cue.');
+    if (!patch.cue || !/^[a-zA-Z0-9_-]{10,80}$/.test(patch.cue.id) || !['reset-ball', 'reset-dvd', 'reset-couple'].includes(patch.cue.type) || Object.keys(patch.cue).some(key => !['id', 'type'].includes(key))) invalid('Invalid show cue.');
   }
   return copy(patch);
 }

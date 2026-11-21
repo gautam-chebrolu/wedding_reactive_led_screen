@@ -1,0 +1,13 @@
+{
+  "mode": "Built-in image_gen",
+  "use_case": "background-extraction",
+  "inputs": "Two wedding portraits attached by the user on 2026-11-21",
+  "gautam": {
+    "file": "gautam.png",
+    "prompt": "Use case: background-extraction. Asset type: transparent photographic sprite for a wedding LED screen. Edit target: the FIRST of the two attached small wedding portraits, the smiling man wearing an ivory embroidered sherwani, a pink shoulder cloth, flower garlands, and hands together in namaste. Remove only the background and all other people. Extract this exact man's visible head and torso, including hair, shoulders, both arms, hands, garlands and clothing, down to the existing lower crop. Preserve his exact face, identity, expression, pose, proportions, colors and photo detail; do not redraw, beautify or invent clothing or body below the crop. Clean precise silhouette with genuine transparent alpha outside the subject, including between arms and body where applicable. Frame the extracted subject upright, tightly fitted with only a small uniform transparent margin. No background, shadow, glow, border, text, extra people or second sprite. Output only this man on transparent background."
+  },
+  "priya": {
+    "file": "priya.png",
+    "prompt": "Use case: background-extraction. Asset type: transparent photographic sprite for a wedding LED screen. Edit target: the attached small portrait of the smiling WOMAN in lilac-pink embroidered wedding clothes, jeweled headpiece and jewelry, turquoise-and-white flower garlands, with hands together in namaste. Use the original woman's photo; the other recent image is a man's cutout, which is not the edit target. Remove only the background and all other people (including the cropped man on the left and the woman on the right). Extract only this exact woman's visible head and torso, including her hair, veil, shoulders, both arms, hands, jewelry, garlands, and clothing down to the existing bottom crop. Preserve her exact face, identity, expression, pose, proportions, colors and original photo detail; do not redraw or beautify her, do not invent new body or clothing below the original crop. Precise clean silhouette with genuine transparent alpha everywhere outside the subject. Frame upright, tightly fitted with a small uniform transparent margin. No background, shadow, glow, border, text, extra people, or second sprite. Output only this woman on a transparent background."
+  }
+}

@@ -13,7 +13,7 @@ import { thumbnail } from '../src/thumbnails.js';
 const additions = ['rangoli', 'mehndi', 'baraat', 'kellogg', 'hyperspace', 'liquid', 'tunak'];
 test('all seven additions are selectable, have unique shortcuts and join camera-free shared cycling', () => {
   assert.deepEqual(sceneRegistry.map(scene => scene.id), sceneIds);
-  assert.deepEqual(sceneIds.slice(-7), additions); assert.equal(new Set(sceneShortcuts).size, sceneIds.length);
+  assert.deepEqual(sceneIds.slice(10, 17), additions); assert.equal(new Set(sceneShortcuts).size, sceneIds.length);
   assert.deepEqual(sceneShortcuts.slice(0, 10), ['1','2','3','4','5','6','7','8','9','0']);
   const reserved = new Set(['f','h','b','t','r']); assert.ok(sceneShortcuts.every(key => !reserved.has(key)));
   const state = initialShowState({ scene: 'memories', autoCycle: true, cycleSeconds: 15 }, 0);

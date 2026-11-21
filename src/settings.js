@@ -17,13 +17,13 @@ export const defaults = {
   dvdSpeed: 0.18, kaleidoSegments: '12', memoryBeats: '4',
   // Preserve saved/shared presets: the old photo counts now select print sizes.
   memoryCount: '9', rangoliPetals: '16', hyperspaceSpeed: 0.8, tunnelShape: 'hexagons',
-  liquidMaterial: 'chrome', tunakMode: 'takeover', tunakRate: '1'
+  liquidMaterial: 'chrome', tunakMode: 'takeover', tunakRate: '1', coupleSpeed: 0.18
 };
 const ranges = {
   sensitivity: [0.3, 4], intensity: [0, 1], brightness: [0, 1], cycleSeconds: [15, 300],
   mouthX: [0, 1], mouthY: [0, 1], mouthWidth: [0.02, 0.6], mouthHeight: [0.01, 0.4],
   mouthAngle: [-60, 60], motionThreshold: [8, 80], ballGravity: [0.2, 1.5],
-  portraitCycleSeconds: [3, 120], dvdSpeed: [0.05, 0.6], hyperspaceSpeed: [0.25, 2]
+  portraitCycleSeconds: [3, 120], dvdSpeed: [0.05, 0.6], hyperspaceSpeed: [0.25, 2], coupleSpeed: [0.05, 0.6]
 };
 export function sanitizeSettings(input) {
   const result = { ...defaults, portraitMouths: {} };

@@ -113,12 +113,12 @@ $('connect-camera').addEventListener('click', async () => {
 });
 $('stop-camera').addEventListener('click', () => camera.stop());
 
-const rangeKeys = ['sensitivity', 'intensity', 'brightness', 'mouthX', 'mouthY', 'mouthWidth', 'mouthHeight', 'mouthAngle', 'motionThreshold', 'ballGravity', 'dvdSpeed', 'hyperspaceSpeed'];
+const rangeKeys = ['sensitivity', 'intensity', 'brightness', 'mouthX', 'mouthY', 'mouthWidth', 'mouthHeight', 'mouthAngle', 'motionThreshold', 'ballGravity', 'dvdSpeed', 'hyperspaceSpeed', 'coupleSpeed'];
 function formatSetting(key) {
   if (['sensitivity', 'ballGravity', 'hyperspaceSpeed'].includes(key)) return `${settings[key].toFixed(2).replace(/0$/, '')}×`;
   if (key === 'mouthAngle') return `${settings[key]}°`;
   if (key === 'motionThreshold') return Math.round(settings[key]);
-  if (key === 'dvdSpeed') return `${Math.round(settings[key] * 100)}%`;
+  if (['dvdSpeed', 'coupleSpeed'].includes(key)) return `${Math.round(settings[key] * 100)}%`;
   return `${Math.round(settings[key] * 100)}%`;
 }
 function syncSettings() {
@@ -175,7 +175,7 @@ function syncScene() {
   $('scene-description').textContent = scene.description; $('scene-setup-tag').textContent = scene.id.toUpperCase();
   $('moon-controls').hidden = scene.id !== 'moon'; $('portrait-controls').hidden = scene.id !== 'portrait';
   $('camera-controls').hidden = !scene.needsCamera; $('remix-controls').hidden = scene.id !== 'camera'; $('ball-controls').hidden = scene.id !== 'ball';
-  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel', 'pg-camera', 'memories', 'rangoli', 'mehndi', 'baraat', 'kellogg', 'hyperspace', 'liquid', 'tunak']) $(`${id}-controls`).hidden = scene.id !== id;
+  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel', 'pg-camera', 'memories', 'rangoli', 'mehndi', 'baraat', 'kellogg', 'hyperspace', 'liquid', 'tunak', 'couple']) $(`${id}-controls`).hidden = scene.id !== id;
   renderer.canvas.style.cursor = scene.id === 'portrait' ? 'crosshair' : scene.id === 'ball' ? 'none' : 'default';
 }
 
@@ -254,14 +254,16 @@ renderer.canvas.addEventListener('pointermove', event => {
   }
 });
 $('reset-ball').addEventListener('click', () => sendCue('reset-ball')); 
-$('reset-dvd').addEventListener('click', () => sendCue('reset-dvd')); 
+$('reset-dvd').addEventListener('click', () => sendCue('reset-dvd'));
+$('reset-couple').addEventListener('click', () => sendCue('reset-couple'));
 
 function tapTempo() { audio.tapClock.tap(performance.now()); publishTempo(); }
 function publishTempo() {
   if (shared.isController) shared.publish({ tempo: audio.tapClock.bpm ? { bpm: audio.tapClock.bpm, anchorAt: shared.now } : null }, true);
 }
+function cueScene(type) { return { 'reset-dvd': 'dvd', 'reset-couple': 'couple' }[type] || 'ball'; }
 function sendCue(type) {
-  renderer.instance(type === 'reset-dvd' ? 'dvd' : 'ball').reset();
+  renderer.instance(cueScene(type)).reset();
   if (shared.isController) shared.publish({ cue: { type, id: crypto.randomUUID().replaceAll('-', '') } }, true);
 }
 $('tap-tempo').addEventListener('click', tapTempo);
@@ -308,7 +310,7 @@ function handleKey(event, fromOutput = false) {
   else if (key === 't') tapTempo();
   else if (key === 'f') fullscreen();
   else if (key === 'h') { if (shared.isWall) showUI.wallSetup(); else document.body.classList.toggle('presentation'); }
-  else if (key === 'r') sendCue(settings.scene === 'dvd' ? 'reset-dvd' : 'reset-ball');
+  else if (key === 'r') sendCue(settings.scene === 'dvd' ? 'reset-dvd' : settings.scene === 'couple' ? 'reset-couple' : 'reset-ball');
   else if (key === ']') nextPortrait();
   else if (key === '[') nextPortrait(-1);
   else if (key === 'escape' && !shared.isWall) document.body.classList.remove('presentation');
@@ -360,7 +362,7 @@ function applyRemoteSnapshot(snapshot) {
     } else audio.tapClock.clear();
   }
   if (snapshot.state.cue?.id !== remoteCue) {
-    if (remoteCue !== null && snapshot.state.cue) renderer.instance(snapshot.state.cue.type === 'reset-dvd' ? 'dvd' : 'ball').reset();
+    if (remoteCue !== null && snapshot.state.cue) renderer.instance(cueScene(snapshot.state.cue.type)).reset();
     remoteCue = snapshot.state.cue?.id || '';
   }
   syncSettings(); syncPortraitRoster(); syncSourceStatus(); renderer.resize(); syncSharedPortraits();

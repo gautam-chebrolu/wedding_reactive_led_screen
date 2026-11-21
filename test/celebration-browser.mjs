@@ -17,7 +17,7 @@ try {
   const errors = [], failed = []; page.on('pageerror', error => errors.push(error.message));
   page.on('response', response => { if (response.status() >= 400) failed.push(`${response.status()} ${response.url()}`); });
   await page.goto(`http://127.0.0.1:${app.server.address().port}`);
-  await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17);
+  await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 18);
   for (const [index, id] of ids.entries()) {
     await page.locator('h1').click(); await page.keyboard.press(['q','w','e','a','s','d','z'][index]);
     await page.waitForFunction(id => document.querySelector(`[data-scene="${id}"]`).getAttribute('aria-pressed') === 'true', id);
@@ -29,7 +29,7 @@ try {
   for (const [key, value] of [['tunakMode','solo'], ['tunakRate','2']]) await page.locator('#' + key).selectOption(value);
   await page.locator('[data-scene="liquid"]').click(); await page.locator('#liquidMaterial').selectOption('silk'); await page.waitForTimeout(1400);
   await page.locator('#visual-canvas').screenshot({ path: path.join(parent, 'liquid-silk-live.png') });
-  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 17);
+  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 18);
   assert.equal(await page.locator('#liquidMaterial').inputValue(), 'silk');
   await page.locator('[data-scene="tunak"]').click(); assert.equal(await page.locator('#tunakMode').inputValue(), 'solo'); assert.equal(await page.locator('#tunakRate').inputValue(), '2');
   console.log('PASS: material and Tunak controls persist through reload');

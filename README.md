@@ -34,6 +34,7 @@ For your **Vercel** deployment, see [DEPLOYMENT.md](DEPLOYMENT.md). The included
 | One perfect corner | Your supplied PG Video logo bouncing on black | Changes color at the walls and pulses on the beat | Set bounce speed; R restarts it |
 | Smile, you’re on PG Camera | Plain live webcam inside a gold “Smile, you're on PG Camera” border | Natural video; no color treatment or beat zoom | Enable camera; optional mirror |
 | Duke Chapel, after dark | Original front-facing vector illustration of Duke Chapel beneath a night sky | Window groups flash and trade colors with the beat | Works offline; reactivity and Gentle motion control the light show |
+| PG, on the bounce | Two transparent head-and-torso photos of Priya and Gautam on black | Independent wall bounces; the beat bumps size and speed | X selects it; set bounce speed; R restarts both |
 | Through your eyes | Approved guest photos scattered on a sage tabletop | A photo settles onto the table every 1, 2, 4 or 8 beats | Connects to the existing guest album automatically |
 
 | PG Rangoli | Your PG monogram surrounded by gold filigree on emerald | Bass expands the petals; beats illuminate the outer dots | Q · choose 12, 16 or 24 petals |
@@ -48,11 +49,13 @@ There are four color palettes, reactivity and brightness controls, a gentle-moti
 
 ## The new celebration scenes
 
-The seven new looks work offline with the existing demo, microphone, mixer, shared-tab and local-file inputs. Use **Q / W / E / A / S / D / Z** or their scene cards. Their controls persist in exported settings and synchronize to shared walls. Gentle motion reduces the movement and beat response; Reactivity controls the musical accents.
+The seven celebration looks work offline with the existing demo, microphone, mixer, shared-tab and local-file inputs. Use **Q / W / E / A / S / D / Z** or their scene cards. Their controls persist in exported settings and synchronize to shared walls. Gentle motion reduces the movement and beat response; Reactivity controls the musical accents.
 
 **Kellogg After Hours** is an original illustration of the Global Hub, including its curved glass wings and lakefront plaza, with a Lake Michigan reflection. It uses the [official Global Hub reference](https://www.kellogg.northwestern.edu/the-experience/campuses/global-hub/), rather than a Chicago skyline.
 
 **Liquid Chrome / Silk** renders an analytic reflective surface using a bundled WebGL shader, with a Canvas ribbon fallback when a GPU context is unavailable. Its internal pixel budget is bounded independently of the wall resolution. **Tunak Takeover** uses a bundled transparent sprite atlas; its head and shoulders are animated independently. Select Solo or Takeover and a nod on every beat or every other beat. It responds to any music and does not automatically recognize the Tunak song. Artwork provenance and the generation prompt are in [assets/tunak/README.md](assets/tunak/README.md).
+
+**PG, on the bounce** (X) uses two separate head-and-torso cutouts of Priya and Gautam, in their original photo colors on black. They bounce at different speeds and pulse to the beat. Scene setup has a bounce-speed slider and restart button; R restarts both. Reactivity controls the pulse, Gentle motion softens the movement, and settings/reset cues synchronize to shared walls. Artwork and exact built-in imagegen background-removal prompts are in [assets/couple/README.md](assets/couple/README.md).
 
 After adding these scenes to an already-running local server, restart **npm.cmd start** once so shared-show scene validation loads the expanded registry, then refresh the browser.
 
@@ -138,7 +141,7 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 | Key | Action |
 | --- | --- |
 | 1–9, 0 | Choose a scene (5 kaleidoscope, 6 PG gold, 7 PG Video, 8 PG Camera, 9 Duke Chapel, 0 guest photos) |
-| Q / W / E / A / S / D / Z | Rangoli / Mehndi / Baraat / Kellogg / Hyperspace / Liquid / Tunak |
+| Q / W / E / A / S / D / Z / X | Rangoli / Mehndi / Baraat / Kellogg / Hyperspace / Liquid / Tunak / Couple bounce |
 | [ / ] | Previous / next portrait person |
 | Space / Right arrow | Next scene |
 | Left arrow | Previous scene |
@@ -146,7 +149,7 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 | H | Hide/show the operator UI on the current page |
 | B | Blackout / restore visuals |
 | T | Tap tempo |
-| R | Restart the PG Video bounce when in that scene; otherwise restart the ball round |
+| R | Restart the PG Video or couple bounce in those scenes; otherwise restart the ball round |
 | Esc | Exit fullscreen / restore hidden controls |
 
 ## Local data
@@ -198,7 +201,7 @@ The shared `audio` frame contains:
 | `manual`, `beatInBar` | Manual clock active; beat 1–4 only in manual mode (otherwise 0) |
 | `spectrum` | 64 frequency values, 0–255, for additional effects |
 
-Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current seventeen-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js` (and `cameraSceneIds` there if it needs a camera for shared-show cycling). Scene counts come from the registry; sceneShortcuts in scene-ids.js maps each scene to a unique numeric or letter key. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
+Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current eighteen-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js` (and `cameraSceneIds` there if it needs a camera for shared-show cycling). Scene counts come from the registry; sceneShortcuts in scene-ids.js maps each scene to a unique numeric or letter key. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
 
 ## Validation
 
@@ -227,3 +230,5 @@ The first-release ball interaction detects changed pixels, not hands, faces or s
 # wedding_reactive_led_screen
 
 The optional `node test/celebration-browser.mjs` starts an isolated localhost server and verifies all seven additions: real canvas pixels, reactivity, controls/persistence, letter shortcuts, shader/fallback rendering, wide/portrait sizes and mobile layout. It accepts the same PLAYWRIGHT_MODULE and BROWSER_EXECUTABLE variables as the general browser smoke script. Screenshots are saved under test-results/new-scenes/.
+
+The optional `node test/couple-browser.mjs` verifies both transparent cutouts, X/R shortcuts, speed persistence, normal/wide/portrait rendering, fullscreen layout and shared-wall controls on an isolated local server. It uses the same browser environment overrides as the other browser scripts.

@@ -15,6 +15,7 @@ import { KelloggScene, kelloggMetadata } from './kellogg.js';
 import { HyperspaceScene, hyperspaceMetadata } from './hyperspace.js';
 import { LiquidScene, liquidMetadata } from './liquid.js';
 import { TunakScene, tunakMetadata } from './tunak.js';
+import { CoupleScene, coupleMetadata } from './couple.js';
 
 // Add a scene here. It receives the exact same audio, camera and settings frame.
 export const sceneRegistry = [
@@ -34,5 +35,6 @@ export const sceneRegistry = [
   { ...kelloggMetadata, create: () => new KelloggScene() },
   { ...hyperspaceMetadata, create: () => new HyperspaceScene() },
   { ...liquidMetadata, create: () => new LiquidScene() },
-  { ...tunakMetadata, create: () => new TunakScene() }
+  { ...tunakMetadata, create: () => new TunakScene() },
+  { ...coupleMetadata, create: () => new CoupleScene() }
 ];

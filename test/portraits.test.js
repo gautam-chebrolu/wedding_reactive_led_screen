@@ -6,7 +6,7 @@ import path from 'node:path';
 import { PortraitRoster } from '../src/portraits.js';
 import { listPortraitFiles } from '../src/portrait-files.js';
 import { sanitizeSettings } from '../src/settings.js';
-import { gautamMouth } from '../src/portrait-settings.js';
+import { gautamMouth, headlinerMouth } from '../src/portrait-settings.js';
 
 const entries = [
   { id: 'gautam.jpg', name: 'Gautam', src: '/assets/portraits/gautam.jpg', bundled: true },
@@ -65,5 +65,22 @@ test('folder discovery only includes supported images, orders the default first 
     const found = await listPortraitFiles(dir);
     assert.equal(found.length, 3); assert.equal(found[0].id, 'gautam.jpg');
     assert.equal(found[1].src, '/assets/portraits/priya%20%231.png'); assert.equal(found[2].name, 'Z Person');
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('the new headliner replaces the legacy photo without reusing its mouth calibration', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'afterglow-headliner-'));
+  try {
+    await Promise.all(['gautam.jpg', 'priya_gautam_headliner_image.jpeg', 'another-person.png'].map(file => writeFile(path.join(dir, file), 'fixture')));
+    const found = await listPortraitFiles(dir);
+    assert.deepEqual(found.map(entry => entry.id), ['priya_gautam_headliner_image.jpeg', 'another-person.png']);
+    assert.equal(found[0].name, 'Priya & Gautam');
+    const roster = makeRoster({ portraitId: 'gautam.jpg', portraitMouths: { 'gautam.jpg': gautamMouth } });
+    await roster.add(found);
+    assert.equal(roster.current.id, found[0].id);
+    for (const [key, value] of Object.entries(headlinerMouth)) assert.equal(roster.settings[key], value);
+    roster.settings.mouthX = 0.61;
+    roster.next(); roster.next();
+    assert.equal(roster.settings.mouthX, 0.61);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

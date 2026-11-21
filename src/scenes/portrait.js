@@ -39,9 +39,11 @@ export class PortraitScene {
     }
     this.rect = rect;
     const mouthW = rect.w * settings.mouthWidth;
-    const mouthH = rect.h * settings.mouthHeight * (0.12 + audio.level * settings.intensity * 2.4);
+    // Keep the calibrated opening at rest so the original teeth stay covered.
+    const mouthH = rect.h * settings.mouthHeight * (1 + audio.level * settings.intensity * 1.6);
     ctx.save(); ctx.translate(rect.x + rect.w * settings.mouthX, rect.y + rect.h * settings.mouthY); ctx.rotate(settings.mouthAngle * Math.PI / 180);
-    ctx.fillStyle = '#030306'; ctx.beginPath(); ctx.ellipse(0, 0, mouthW / 2, Math.max(2, mouthH / 2), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#030306'; ctx.beginPath(); ctx.ellipse(0, 0, mouthW / 2, Math.max(2, mouthH / 2), 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
     if (!portrait) {
       ctx.textAlign = 'center'; ctx.fillStyle = '#bac5ce'; ctx.font = `${Math.max(12, h * 0.02)}px system-ui`;
       ctx.fillText('YOUR PORTRAIT GOES HERE', w / 2, h * 0.96);

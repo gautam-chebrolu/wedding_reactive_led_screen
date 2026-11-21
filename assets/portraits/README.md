@@ -2,7 +2,8 @@
 
 Put JPG/JPEG, PNG or WebP files directly in this folder. The local `npm start` server discovers them automatically. Click **Reload portraits folder** in the portrait scene after adding files.
 
-- `gautam.jpg` is your supplied portrait, copied unchanged from `PXL_20250730_210901963.jpg`. It loads first as the default, with initial mouth placement set for that photo.
+- `priya_gautam_headliner_image.jpeg` is the default headliner photo, shown as **Priya & Gautam**. Its mouth overlay starts over Gautam's smile on the right (60% across, 44.3% down, angled −15°).
+- `gautam.jpg` is the previous portrait. It stays on disk for compatibility but is excluded from the roster while the new headliner photo is present. Reload the page after upgrading to switch from the old default and use the new mouth placement.
 - `priya.png`, `friend-name.jpg`, etc. add people. Names come from filenames.
 - Use front-facing photos, ideally about 1000–2000 pixels tall. Different sizes/ratios work.
 - Select each person, click their mouth, and adjust the sliders. Placement saves individually in the browser and exported settings.

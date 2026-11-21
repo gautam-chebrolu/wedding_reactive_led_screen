@@ -4,6 +4,7 @@ export const mouthRanges = {
 };
 export const mouthDefaults = { mouthX: 0.5, mouthY: 0.65, mouthWidth: 0.18, mouthHeight: 0.12, mouthAngle: 0 };
 export const gautamMouth = { mouthX: 0.46, mouthY: 0.475, mouthWidth: 0.11, mouthHeight: 0.05, mouthAngle: 0 };
+export const headlinerMouth = { mouthX: 0.6, mouthY: 0.443, mouthWidth: 0.085, mouthHeight: 0.045, mouthAngle: -15 };
 export function sanitizeMouth(input, fallback = mouthDefaults) {
   return Object.fromEntries(Object.entries(mouthRanges).map(([key, [min, max]]) => {
     const value = input?.[key];

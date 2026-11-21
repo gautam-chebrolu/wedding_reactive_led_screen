@@ -44,14 +44,14 @@ For a permanent, automatically loaded roster, use this layout:
 ```text
 assets/
   portraits/
-    gautam.jpg
+    priya_gautam_headliner_image.jpeg
     priya.png
     friend-name.webp
 ```
 
-No manifest or scene-code edit is required. Run the included `npm start` server: it discovers JPG/JPEG, PNG and WebP files in that folder, with `gautam.*` first and the remaining filenames in alphabetical order. Filename stems become display names. Images can have different dimensions/aspect ratios; the scene fits the entire image without stretching it. Clear front-facing photos are easiest to calibrate. Aim for about 1000–2000 pixels tall, within 30 MB for session uploads. The roster supports up to 100 people. Avoid changing filenames after calibration because a filename identifies its saved mouth settings.
+No manifest or scene-code edit is required. Run the included `npm start` server: it discovers JPG/JPEG, PNG and WebP files in that folder, with the headliner photo first and the remaining filenames in alphabetical order. Filename stems become display names. Images can have different dimensions/aspect ratios; the scene fits the entire image without stretching it. Clear front-facing photos are easiest to calibrate. Aim for about 1000–2000 pixels tall, within 30 MB for session uploads. The roster supports up to 100 people. Avoid changing filenames after calibration because a filename identifies its saved mouth settings.
 
-**Your supplied portrait is installed as `assets/portraits/gautam.jpg`**, copied unchanged from `PXL_20250730_210901963.jpg`. It loads automatically as the default person. Initial mouth placement is centered on your lips at approximately 46% across and 47.5% down the image; click the mouth and fine-tune if needed. Your saved corrections override those defaults. To replace the default photo later, replace `gautam.jpg` and reload the page.
+**The default headliner is `assets/portraits/priya_gautam_headliner_image.jpeg`**, shown as **Priya & Gautam**. Initial mouth placement is centered on Gautam's smile on the right at approximately 60% across and 44.3% down the image, angled −15°; click the mouth and fine-tune if needed. Your saved corrections override those defaults. The previous `gautam.jpg` remains on disk but is excluded from the roster while the replacement is present; if the replacement is removed, `gautam.*` loads first again. Reload the page after upgrading: a saved selection of the old portrait falls back to the new headliner with its own mouth calibration. To replace the default photo later, replace `priya_gautam_headliner_image.jpeg` and reload the page.
 
 After placing new files there, click **Reload portraits folder** or reload the page. That button discovers additions; replace an existing image and reload the whole page to refresh its decoded pixels. Deleting a folder image takes effect on page reload. This folder discovery uses the bundled Node server, not a generic static-file host.
 

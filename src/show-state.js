@@ -1,5 +1,5 @@
 import { defaults, sanitizeSettings } from './settings.js';
-import { sceneIds } from './scene-ids.js';
+import { sceneIds, cameraSceneIds } from './scene-ids.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 export function initialShowState(settings, now) {
@@ -43,7 +43,7 @@ export function validateShowPatch(patch) {
 export function sceneAt(state, now, cameraReady) {
   const { settings } = state;
   if (!settings.autoCycle) return settings.scene;
-  const eligible = sceneIds.filter(id => cameraReady || !['camera', 'ball'].includes(id));
+  const eligible = sceneIds.filter(id => cameraReady || !cameraSceneIds.includes(id));
   const start = Math.max(0, eligible.indexOf(settings.scene));
   const steps = Math.max(0, Math.floor((now - state.sceneAnchor) / (settings.cycleSeconds * 1000)));
   return eligible[(start + steps) % eligible.length];

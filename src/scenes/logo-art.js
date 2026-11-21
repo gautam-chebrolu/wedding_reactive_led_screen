@@ -5,6 +5,7 @@ export function loadLogo(src, { monochrome = false } = {}) {
   const art = { image, ready: false, failed: false };
   image.onload = () => {
     try {
+      art.aspect = image.naturalWidth / image.naturalHeight;
       if (monochrome) {
         const mask = document.createElement('canvas'); mask.width = image.naturalWidth; mask.height = image.naturalHeight;
         const ctx = mask.getContext('2d', { willReadFrequently: true }); ctx.drawImage(image, 0, 0);

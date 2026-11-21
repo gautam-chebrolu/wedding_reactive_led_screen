@@ -6,6 +6,8 @@ import { sceneRegistry } from '../src/scenes/index.js';
 import { sceneIds } from '../src/scene-ids.js';
 import { sanitizeSettings } from '../src/settings.js';
 import { monochromeMask } from '../src/logo-mask.js';
+import { chapelWindowLight } from '../src/scenes/chapel.js';
+import { initialShowState, sceneAt, validateShowPatch } from '../src/show-state.js';
 
 test('DVD masking removes black padding, preserves anti-aliasing and crops to the original artwork', () => {
   const pixels = new Uint8ClampedArray([
@@ -54,12 +56,36 @@ test('gold/DVD scale follows beat pulses and respects gentle motion and reactivi
   assert.equal(pulseScale({ pulse: 1 }, { ...settings, intensity: 0 }), 1);
 });
 
-test('all seven scenes persist and the three new scenes require no camera', () => {
+test('all nine scenes persist and scenes without camera inputs stay independent', () => {
   assert.deepEqual(sceneRegistry.map(scene => scene.id), sceneIds);
-  for (const id of ['kaleidoscope', 'monogram', 'dvd']) {
+  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel']) {
     assert.equal(sanitizeSettings({ scene: id }).scene, id);
     assert.equal(sceneRegistry.find(scene => scene.id === id).needsCamera, false);
   }
+});
+
+test('PG Camera is selectable and shared cycling skips it until the camera is live', () => {
+  assert.equal(sceneRegistry.find(scene => scene.id === 'pg-camera').needsCamera, true);
+  for (const id of ['pg-camera', 'chapel']) {
+    assert.equal(sanitizeSettings({ scene: id }).scene, id);
+    assert.doesNotThrow(() => validateShowPatch({ settings: { scene: id } }));
+  }
+  const state = initialShowState({ scene: 'dvd', autoCycle: true, cycleSeconds: 30 }, 0);
+  assert.equal(sceneAt(state, 30000, false), 'chapel');
+  assert.equal(sceneAt(state, 30000, true), 'pg-camera');
+  assert.equal(sceneAt(state, 60000, true), 'chapel');
+});
+
+test('chapel windows flash on beats, alternate groups, and obey reactivity and gentle motion', () => {
+  const settings = sanitizeSettings(null);
+  const idle = { pulse: 0, bass: 0, beatCount: 0 };
+  const beat = { pulse: 1, bass: 0.8, beatCount: 4 };
+  const peak = chapelWindowLight(beat, settings, 0);
+  assert.ok(peak > chapelWindowLight(idle, settings, 0) + 0.3);
+  assert.ok(peak > chapelWindowLight(beat, settings, 1));
+  assert.ok(chapelWindowLight({ ...beat, beatCount: 5 }, settings, 1) > chapelWindowLight({ ...beat, beatCount: 5 }, settings, 0));
+  assert.ok(chapelWindowLight(beat, { ...settings, reducedMotion: true }, 0) < peak * 0.5);
+  assert.equal(chapelWindowLight(beat, { ...settings, intensity: 0 }, 0), chapelWindowLight(idle, { ...settings, intensity: 0 }, 0));
 });
 
 test('portrait calibrations and new controls are validated when importing settings', () => {

@@ -169,7 +169,7 @@ function syncScene() {
   $('scene-description').textContent = scene.description; $('scene-setup-tag').textContent = scene.id.toUpperCase();
   $('moon-controls').hidden = scene.id !== 'moon'; $('portrait-controls').hidden = scene.id !== 'portrait';
   $('camera-controls').hidden = !scene.needsCamera; $('remix-controls').hidden = scene.id !== 'camera'; $('ball-controls').hidden = scene.id !== 'ball';
-  for (const id of ['kaleidoscope', 'monogram', 'dvd']) $(`${id}-controls`).hidden = scene.id !== id;
+  for (const id of ['kaleidoscope', 'monogram', 'dvd', 'chapel', 'pg-camera']) $(`${id}-controls`).hidden = scene.id !== id;
   renderer.canvas.style.cursor = scene.id === 'portrait' ? 'crosshair' : scene.id === 'ball' ? 'none' : 'default';
 }
 

@@ -32,7 +32,7 @@ function wavBuffer() {
   return data;
 }
 try {
-  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 7); await waitForScene();
+  await page.goto(base); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 9); await waitForScene();
   assert.equal(await page.title(), 'Afterglow · A visual soundtrack');
   assert.ok((await canvasPixel()).bright > 50, 'Moon scene has visible rendered detail');
   await page.screenshot({ path: 'test-results/desktop.png', fullPage: true });
@@ -70,6 +70,13 @@ try {
     assert.ok((await canvasPixel()).sum > 0, `${effect} camera output is nonempty`);
   }
   await page.screenshot({ path: 'test-results/camera.png', fullPage: true });
+  await page.locator('[data-scene="pg-camera"]').click(); await waitForScene();
+  assert.equal(await page.locator('#remix-controls').isVisible(), false);
+  assert.equal(await page.locator('#camera-controls').isVisible(), true);
+  assert.ok((await canvasPixel()).bright > 50, 'PG Camera renders a live feed');
+  const borderPixel = await page.locator('#visual-canvas').evaluate(canvas => [...canvas.getContext('2d').getImageData(canvas.width * 0.25, canvas.height * 0.12, 1, 1).data].slice(0, 3));
+  assert.ok(Math.max(...borderPixel) < 20, 'Video crop stays inside the dark message border');
+  await page.screenshot({ path: 'test-results/pg-camera-live.png', fullPage: true });
   await page.locator('[data-scene="ball"]').click(); await waitForScene();
   const bounds = await page.locator('#visual-canvas').boundingBox();
   await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height * 0.5); await page.locator('#reset-ball').click();
@@ -82,8 +89,8 @@ try {
   await page.locator('#audio-source').selectOption('file');
   await page.locator('#music-file').setInputFiles({ name: 'test-kicks.wav', mimeType: 'audio/wav', buffer: wavBuffer() });
   await page.waitForFunction(() => document.getElementById('audio-state').textContent === 'LIVE');
-  await page.locator('#play-pause').click(); assert.equal(await page.locator('#play-pause').textContent(), 'Play');
-  await page.locator('#play-pause').click(); assert.equal(await page.locator('#play-pause').textContent(), 'Pause');
+  await page.locator('#play-pause').click(); await page.waitForFunction(() => document.getElementById('play-pause').textContent === 'Play');
+  await page.locator('#play-pause').click(); await page.waitForFunction(() => document.getElementById('play-pause').textContent === 'Pause');
   await page.locator('#mute-playback').check();
   await page.waitForTimeout(400);
   assert.notEqual(await page.locator('#level-value').textContent(), '0%', 'Muted playback still drives analysis');
@@ -101,7 +108,7 @@ try {
   await page.keyboard.press('h'); assert.ok(await page.locator('body').evaluate(el => el.classList.contains('presentation')));
   await page.keyboard.press('Escape');
   console.log('PASS: tap clock, keyboard navigation, clean presentation and blackout');
-  for (const [key, id] of [['5', 'kaleidoscope'], ['6', 'monogram'], ['7', 'dvd']]) {
+  for (const [key, id] of [['5', 'kaleidoscope'], ['6', 'monogram'], ['7', 'dvd'], ['8', 'pg-camera'], ['9', 'chapel']]) {
     await page.locator('h1').click(); await page.keyboard.press(key); await waitForScene();
     assert.ok(await page.locator(`[data-scene="${id}"]`).evaluate(el => el.getAttribute('aria-pressed') === 'true'));
     assert.ok((await canvasPixel()).bright > 5, `${id} has rendered detail`);
@@ -110,7 +117,27 @@ try {
   await page.locator('[data-scene="kaleidoscope"]').click();
   for (const count of ['8', '12', '16']) { await page.locator('#kaleidoSegments').selectOption(count); await page.waitForTimeout(200); }
   await page.locator('[data-scene="dvd"]').click(); await page.locator('#reset-dvd').click();
-  console.log('PASS: all three new scenes, geometry controls and bounce reset');
+  console.log('PASS: all scenes, keyboard shortcuts, geometry controls and bounce reset');
+
+  const chapelPixels = await page.evaluate(async () => {
+    const { ChapelScene } = await import('/src/scenes/chapel.js');
+    const { defaults, palettes } = await import('/src/settings.js');
+    const scene = new ChapelScene();
+    await new Promise((resolve, reject) => {
+      scene.art.addEventListener('load', resolve, { once: true });
+      scene.art.addEventListener('error', reject, { once: true });
+    });
+    const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 1000;
+    const ctx = canvas.getContext('2d');
+    const frame = { ctx, width: 1200, height: 1000, time: 0, settings: defaults, palette: palettes.moonstone };
+    const sample = pulse => {
+      scene.render({ ...frame, audio: { pulse, bass: 0, beatCount: 4 } });
+      return [...ctx.getImageData(535, 310, 1, 1).data].slice(0, 3).reduce((a, b) => a + b, 0);
+    };
+    return { idle: sample(0), peak: sample(1) };
+  });
+  assert.ok(chapelPixels.peak > chapelPixels.idle + 100, 'Chapel window pixels visibly brighten with the beat');
+  console.log('PASS: chapel window rendering reacts to music pulses');
 
 
   const popupEvent = page.waitForEvent('popup'); await page.locator('#output-button').click();
@@ -124,7 +151,7 @@ try {
   console.log('PASS: separate live output and wide wall ratio');
 
   await page.locator('[data-palette="rose"]').click();
-  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 7);
+  await page.reload(); await page.waitForFunction(() => document.querySelectorAll('.scene-card').length === 9);
   assert.equal(await page.locator('#palette-name').textContent(), 'Rose quartz');
   await page.locator('#help-button').click(); assert.ok(await page.locator('#help-dialog').evaluate(el => el.open)); await page.locator('#help-done').click();
   await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);
@@ -153,6 +180,12 @@ try {
   await wall.waitForFunction(() => document.getElementById('brightness').value === '0.35');
   await page.locator('#blackout-button').click();
   await wall.waitForFunction(() => document.getElementById('blackout-button').getAttribute('aria-pressed') === 'true');
+  await wall.waitForFunction(() => {
+    const c = document.getElementById('visual-canvas');
+    const data = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    for (let i = 0; i < data.length; i += 4) if (data[i] || data[i + 1] || data[i + 2]) return false;
+    return true;
+  });
   const total = await wall.locator('#visual-canvas').evaluate(c => {
     const data = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     let sum = 0; for (let i = 0; i < data.length; i += 4) sum += data[i] + data[i + 1] + data[i + 2]; return sum;

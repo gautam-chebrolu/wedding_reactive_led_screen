@@ -5,6 +5,8 @@ import { BallScene, ballMetadata } from './ball.js';
 import { KaleidoscopeScene, kaleidoscopeMetadata } from './kaleidoscope.js';
 import { MonogramScene, monogramMetadata } from './monogram.js';
 import { DVDScene, dvdMetadata } from './dvd.js';
+import { PGCameraScene, pgCameraMetadata } from './pg-camera.js';
+import { ChapelScene, chapelMetadata } from './chapel.js';
 
 // Add a scene here. It receives the exact same audio, camera and settings frame.
 export const sceneRegistry = [
@@ -14,5 +16,7 @@ export const sceneRegistry = [
   { ...ballMetadata, create: () => new BallScene() },
   { ...kaleidoscopeMetadata, create: () => new KaleidoscopeScene() },
   { ...monogramMetadata, create: () => new MonogramScene() },
-  { ...dvdMetadata, create: () => new DVDScene() }
+  { ...dvdMetadata, create: () => new DVDScene() },
+  { ...pgCameraMetadata, create: () => new PGCameraScene() },
+  { ...chapelMetadata, create: () => new ChapelScene() }
 ];

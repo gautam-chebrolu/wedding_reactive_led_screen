@@ -31,7 +31,9 @@ For your **Vercel** deployment, see [DEPLOYMENT.md](DEPLOYMENT.md). The included
 | Keep it in the air | Webcam or a dark interactive grid | Motion near a glowing ball pushes it upward; gravity drops it out if missed | Enable camera, or use mouse/touch |
 | Infinite bloom | A generated, mirrored kaleidoscope of petals, ribbons and gems | Bass opens the pattern; treble changes outlines; beats turn its colors | No camera; choose 8, 12 or 16 sections |
 | PG, in gold | The supplied PG monogram centered in gold on black | Soft scale pulse on each detected or tapped beat | Loads the bundled SVG |
-| One perfect corner | The classic bouncing DVD logo on black | Changes color at the walls and pulses on the beat | Set bounce speed; R restarts it |
+| One perfect corner | Your supplied PG Video logo bouncing on black | Changes color at the walls and pulses on the beat | Set bounce speed; R restarts it |
+| Smile, you’re on PG Camera | Plain live webcam inside a gold “Smile, you're on PG Camera” border | Natural video; no color treatment or beat zoom | Enable camera; optional mirror |
+| Duke Chapel, after dark | Original front-facing vector illustration of Duke Chapel beneath a night sky | Window groups flash and trade colors with the beat | Works offline; reactivity and Gentle motion control the light show |
 
 There are four color palettes, reactivity and brightness controls, a gentle-motion option, scene transitions, timed cycling, tap tempo, a blackout switch, render resolution selection, and settings import/export. Camera scenes join auto-cycle only after a camera is enabled.
 
@@ -59,7 +61,7 @@ For **each person**, select them, click their mouth in the preview, and adjust h
 
 ## Logo assets
 
-`assets/pg-monogram.svg` is the supplied **Wedding Invites Frame 37.svg**, copied unchanged. The renderer crops empty frame margins and applies a gold gradient to its alpha mask, preserving the original artwork. Global palettes do not recolor the gold monogram. `assets/dvd-original.png` is the actual 512×512 DVD image downloaded from the link you supplied. At runtime, the renderer uses its luminance as transparency, preserves anti-aliased edges, crops the black padding, and tints only the logo. The source image is kept unchanged, and collision bounds follow the cropped artwork rather than the square image frame.
+`assets/pg-monogram.svg` is the supplied **Wedding Invites Frame 37.svg**, copied unchanged. The renderer crops empty frame margins and applies a gold gradient to its alpha mask, preserving the original artwork. Global palettes do not recolor the gold monogram. `assets/dvd.svg` recreates the supplied **Bold PG Video Logo.png** as white vector paths on a transparent background. The bouncing scene tints it at each wall hit and pulses it with the beat. Collision bounds use the logo’s full aspect ratio, including the VIDEO lettering. The older `dvd-original.png` remains an unused reference. Duke Chapel is an original vector front elevation, based on [Duke’s facade reference](https://chapel.duke.edu/we-believe/); all artwork and window masks are bundled in `src/scenes/chapel-art.js` and need no external requests.
 
 ## Music inputs
 
@@ -102,7 +104,7 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 
 | Key | Action |
 | --- | --- |
-| 1–7 | Choose a scene (5 kaleidoscope, 6 PG, 7 DVD) |
+| 1–9 | Choose a scene (5 kaleidoscope, 6 PG gold, 7 PG Video, 8 PG Camera, 9 Duke Chapel) |
 | [ / ] | Previous / next portrait person |
 | Space / Right arrow | Next scene |
 | Left arrow | Previous scene |
@@ -110,7 +112,7 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 | H | Hide/show the operator UI on the current page |
 | B | Blackout / restore visuals |
 | T | Tap tempo |
-| R | Restart the DVD bounce when in that scene; otherwise restart the ball round |
+| R | Restart the PG Video bounce when in that scene; otherwise restart the ball round |
 | Esc | Exit fullscreen / restore hidden controls |
 
 ## Local data
@@ -162,7 +164,7 @@ The shared `audio` frame contains:
 | `manual`, `beatInBar` | Manual clock active; beat 1–4 only in manual mode (otherwise 0) |
 | `spectrum` | 64 frequency values, 0–255, for additional effects |
 
-Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current seven-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js`. Scene counts and available numeric shortcuts are derived from the registry. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
+Render in the supplied dimensions rather than hardcoding a ratio. Paint the whole canvas each frame. Respect `settings.intensity` and `settings.reducedMotion`, and cache static textures in the constructor. The renderer handles transitions, brightness, blackout and output sizing. The current nine-scene UI includes scene-specific setup panels: extend `syncScene()`/`scene-setup` in `main.js` and `index.html`, add settings validation in `settings.js`, and add its ID to `scene-ids.js` (and `cameraSceneIds` there if it needs a camera for shared-show cycling). Scene counts and available numeric shortcuts are derived from the registry. A p5 instance or WebGL offscreen canvas could be adapted to this contract later.
 
 ## Validation
 
@@ -170,7 +172,7 @@ Render in the supplied dimensions rather than hardcoding a ratio. Paint the whol
 npm test
 ```
 
-Uses Node's built-in runner to test silence/sustained tones, regular kick tempo, duplicate onset suppression, manual clock behavior, cancelled microphone requests, input track cleanup, no microphone speaker routing, motion sampling/exposure compensation, ball saves/loss/boundaries, crop mapping and imported settings validation. Additional tests cover per-person calibration, saved selection, timed portrait rotation, failed/duplicate image loads, safe portrait-folder discovery, DVD wall/corner reflections, pulse-aware bounds and the expanded scene registry. No dependencies are required for these tests.
+Uses Node's built-in runner to test silence/sustained tones, regular kick tempo, duplicate onset suppression, manual clock behavior, cancelled microphone requests, input track cleanup, no microphone speaker routing, motion sampling/exposure compensation, ball saves/loss/boundaries, crop mapping and imported settings validation. Additional tests cover per-person calibration, saved selection, timed portrait rotation, failed/duplicate image loads, safe portrait-folder discovery, PG Video wall/corner reflections, pulse-aware bounds and the expanded scene registry, camera-aware shared cycling and chapel window lighting. No dependencies are required for these tests.
 
 An optional browser smoke script is at `test/browser-check.mjs`. With a separately installed Playwright module and Chromium, run it against the local server:
 

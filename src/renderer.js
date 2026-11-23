@@ -1,22 +1,28 @@
 import { clamp } from './math.js';
 import { palettes } from './settings.js';
 import { sceneRegistry } from './scenes/index.js';
+import { renderDimensions, containRect, observeDisplay, normalizePlacement, placementTransform } from './display.js';
 
 export class Renderer {
   constructor(canvas, stage, settings) {
     this.canvas = canvas; this.stage = stage; this.settings = settings;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.instances = new Map(); this.transition = document.createElement('canvas');
-    this.transitionStart = -Infinity; this.blackout = false; this.outputAspect = 0;
-    this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(stage);
-    this.resize();
+    this.transitionStart = -Infinity; this.blackout = false; this.outputSize = null;
+    this.placement = normalizePlacement();
+    this.stopObserving = observeDisplay(stage, () => this.resize());
+  }
+  setOutputSize(size) { this.outputSize = size; this.resize(); }
+  setPlacement(value) {
+    const next = normalizePlacement(value);
+    if (next.x !== this.placement.x || next.y !== this.placement.y || next.scale !== this.placement.scale) this.transitionStart = -Infinity;
+    this.placement = next;
   }
   resize() {
     const rect = this.stage.getBoundingClientRect();
-    const aspect = this.outputAspect || rect.width / Math.max(1, rect.height);
-    let width = Number(this.settings.resolution), height = Math.round(width / aspect);
-    const scale = Math.min(1, 2560 / Math.max(width, height), Math.sqrt(4400000 / (width * height)));
-    width = Math.max(2, Math.round(width * scale)); height = Math.max(2, Math.round(height * scale));
+    const size = renderDimensions(this.outputSize || { width: rect.width, height: rect.height, pixelRatio: this.stage.ownerDocument.defaultView.devicePixelRatio }, this.settings.resolution);
+    if (!size) return; // Keep the last frame while the browser settles a hidden/transitioning viewport.
+    const { width, height } = size;
     if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
   }
   instance(id = this.settings.scene) {
@@ -35,7 +41,14 @@ export class Renderer {
   render(frame) {
     const { ctx, canvas, settings } = this;
     const width = canvas.width, height = canvas.height;
+    const transform = placementTransform(width, height, this.placement);
+    const adjusted = transform.x !== 0 || transform.y !== 0 || transform.scale !== 1;
+    if (adjusted) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height); }
     ctx.save();
+    if (adjusted) {
+      ctx.translate(transform.x, transform.y); ctx.scale(transform.scale, transform.scale);
+      ctx.beginPath(); ctx.rect(0, 0, width, height); ctx.clip();
+    }
     try { this.instance().render({ ...frame, ctx, width, height, settings, palette: palettes[settings.palette] }); }
     finally { ctx.restore(); }
     if (settings.brightness < 1) { ctx.fillStyle = `rgba(0,0,0,${1 - settings.brightness})`; ctx.fillRect(0, 0, width, height); }
@@ -44,9 +57,12 @@ export class Renderer {
     if (this.blackout) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height); }
   }
   pointer(event, now) {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width * this.canvas.width;
-    const y = (event.clientY - rect.top) / rect.height * this.canvas.height;
+    const rect = containRect(this.canvas.width, this.canvas.height, this.canvas.getBoundingClientRect());
+    const transform = placementTransform(this.canvas.width, this.canvas.height, this.placement);
+    const x = ((event.clientX - rect.x) / rect.width * this.canvas.width - transform.x) / transform.scale;
+    const y = ((event.clientY - rect.y) / rect.height * this.canvas.height - transform.y) / transform.scale;
+    if (x < 0 || y < 0 || x > this.canvas.width || y > this.canvas.height) return;
     this.instance().pointer?.(x, y, this.settings, this.canvas.width, this.canvas.height, now);
   }
+  destroy() { this.stopObserving(); }
 }

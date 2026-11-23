@@ -10,12 +10,20 @@ import { SharedShow } from './show-client.js';
 import { mountSharedShowUI } from './show-ui.js';
 import { MemoryAlbum } from './memories.js';
 import { sceneShortcuts } from './scene-ids.js';
+import { mountPreviewSizing } from './preview-sizing.js';
+import { mountVisualPlacement } from './visual-placement.js';
 
 const $ = id => document.getElementById(id);
 const settings = loadSettings();
 const audio = new AudioEngine(syncSourceStatus);
 const camera = new CameraInput(syncCameraStatus);
 const renderer = new Renderer($('visual-canvas'), $('stage'), settings);
+const previewSizing = mountPreviewSizing({ shell: $('stage-shell'), stage: $('stage'), scale: $('preview-scale'),
+  scaleValue: $('preview-scale-value'), dimensions: $('preview-dimensions'), lock: $('preview-lock'),
+  reset: $('reset-preview-size'), handle: $('preview-resize-handle') });
+const visualPlacement = mountVisualPlacement({ canvas: renderer.canvas, toggle: $('move-visuals'),
+  center: $('center-visuals'), reset: $('reset-visual-placement'), scale: $('visual-zoom'), scaleValue: $('visual-zoom-value'),
+  onChange: view => renderer.setPlacement(view) });
 const portraits = new PortraitRoster(settings);
 const memories = new MemoryAlbum({ onChange: album => {
   $('memory-status').textContent = album.status;
@@ -26,11 +34,11 @@ const shared = new SharedShow({ onState: applyRemoteSnapshot, onStatus: syncRemo
 let remoteRoom = '', remoteCue = null, remoteClock = '', mediaLoading = false, mediaDirty = false, lastTelemetry = 0, lastRemoteBeat = -1;
 let lastSwitch = performance.now(), toastTimer, pendingAudio = false, pendingCamera = false;
 let errorReported = false, loadingPortraits = false;
-const output = new WallOutput(renderer.canvas, aspect => {
-  renderer.outputAspect = aspect; $('stage').style.aspectRatio = String(aspect); renderer.resize();
+const output = new WallOutput(renderer.canvas, (aspect, size) => {
+  previewSizing.setAspect(aspect); renderer.setOutputSize(size);
 }, () => {
-  renderer.outputAspect = 0; $('stage').style.aspectRatio = ''; renderer.resize(); $('output-button').innerHTML = 'Open wall output <span aria-hidden="true">↗</span>';
-});
+  previewSizing.setAspect(); renderer.setOutputSize(null); $('output-button').innerHTML = 'Open wall output <span aria-hidden="true">↗</span>';
+}, visualPlacement);
 
 function toast(message, error = false) {
   clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.toggle('error', error); $('toast').hidden = false;

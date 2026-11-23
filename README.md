@@ -130,7 +130,13 @@ For stable timing, tap **T** at least four times on consecutive beats. The media
 5. Keep the operator window visible on the laptop. The output streams only the visual canvas, at up to 30 FPS; controls are not included. The render shape adapts to the output window, including wide LED layouts. Preview fullscreen can be used instead when you only need one window.
 6. Select music input, tune sensitivity/reactivity, and set brightness. Brightness here is a canvas dimmer; it does not replace the LED processor's physical brightness control.
 7. Rehearse the actual DJ feed, full music volume, screen ratio, camera position and lighting. For the ball game, steady lighting and a camera facing guests work best. Keep the ball's area reachable in the image. More sensitive motion settings also react more to camera noise and background movement.
-8. Keep the laptop powered, disable sleep for the show, and keep this app's controller window visible. Browsers can throttle hidden/minimized tabs, and a sleeping computer cannot render. Start at 1920 px; use 1280 if frame rate drops. Render size is capped to avoid excessive buffers on unusual display shapes.
+8. Keep the laptop powered, disable sleep for the show, and keep this app's controller window visible. Browsers can throttle hidden/minimized tabs, and a sleeping computer cannot render. Start with **Output & preferences → Render quality → Automatic**; it follows the actual window size and display pixel density. Existing saved presets can retain a fixed width until you select Automatic. Use 1280 px if frame rate drops. Fixed widths change only rendering detail, never the display bounds. Render size is capped to avoid excessive buffers on unusual display shapes.
+
+Use the **Preview size** slider below the image, or drag the grip just under its lower-right corner, to resize it inside the page. **Lock aspect ratio** preserves 16:9 (or the connected output’s ratio); uncheck it to resize width and height separately. The grip also accepts arrow keys, with Shift for larger steps. **Reset size** restores full width and locks the ratio. Preview sizing saves locally in this browser and fits smaller windows automatically; it does not change the independent output window’s size.
+
+For manual screen alignment, click **Move visuals** or press **M**, then drag directly on the image. The same gesture works in native fullscreen, clean presentation, and the separate output window. While moving, arrow keys nudge the image (Shift makes larger nudges), Home centers it, and +/− adjust zoom. A fullscreen toolbar provides Zoom, Center, Reset and Done; it fades when idle. The page also has **Visual zoom**, **Center visuals** and **Reset placement** controls. Press M or Done to lock placement and resume portrait/ball interactions. Placement saves in this browser and adjusts the actual canvas pixels, including the captured output stream. It is a device calibration and is not sent to other shared-show devices.
+
+The controller preview defaults to 16:9, with its labels and fullscreen button underneath. Native fullscreen and clean presentation fill the current viewport, including portrait and wide screens. The canvas is positioned inside those bounds, so its internal pixel dimensions cannot enlarge or offset the layout. Window, element, fullscreen and display-density changes all update rendering; the separate output measures its own display. If controller fullscreen and the separate output have different shapes, the controller shows the output centered with letterboxing.
 
 The blackout switch makes the visual canvas black immediately while the music continues. It is also black in the separate output. Preview labels are hidden in fullscreen/output. No full-screen strobe effect is implemented; color changes are smoothed and gentle motion reduces decorative movement. The ball still follows gravity so its game remains playable.
 
@@ -147,6 +153,9 @@ Shortcuts apply outside form fields. When a button has focus, Space keeps its no
 | Left arrow | Previous scene |
 | F | Fullscreen preview; in the output window, fullscreen output |
 | H | Hide/show the operator UI on the current page |
+| M | Enable/lock manual visual placement, including fullscreen and separate output |
+| Arrows / Shift+Arrows (while moving) | Nudge placement by 2 / 20 displayed pixels |
+| Home / + / − (while moving) | Center the visuals / zoom in / zoom out |
 | B | Blackout / restore visuals |
 | T | Tap tempo |
 | R | Restart the PG Video or couple bounce in those scenes; otherwise restart the ball round |
@@ -232,3 +241,7 @@ The first-release ball interaction detects changed pixels, not hands, faces or s
 The optional `node test/celebration-browser.mjs` starts an isolated localhost server and verifies all seven additions: real canvas pixels, reactivity, controls/persistence, letter shortcuts, shader/fallback rendering, wide/portrait sizes and mobile layout. It accepts the same PLAYWRIGHT_MODULE and BROWSER_EXECUTABLE variables as the general browser smoke script. Screenshots are saved under test-results/new-scenes/.
 
 The optional `node test/couple-browser.mjs` verifies both transparent cutouts, X/R shortcuts, speed persistence, normal/wide/portrait rendering, fullscreen layout and shared-wall controls on an isolated local server. It uses the same browser environment overrides as the other browser scripts.
+
+The optional `node test/display-browser.mjs` checks actual monogram-pixel centering through fullscreen viewport changes, a density-only display change, clean presentation, output-window resizes and concurrent fullscreen. It also checks buffer limits, pointer alignment and recovery when output closes. Screenshots are saved under `test-results/display/`. It accepts the same browser environment overrides as the other browser checks.
+
+The optional `node test/placement-browser.mjs` verifies actual pixel displacement and zoom, fullscreen dragging, keyboard adjustment, saved calibration, portrait gesture isolation, and dragging the captured stream in the separate output. It accepts the same browser overrides as the other browser checks.

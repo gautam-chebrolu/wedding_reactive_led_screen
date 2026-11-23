@@ -86,3 +86,17 @@ test('the new headliner replaces the legacy photo without reusing its mouth cali
     assert.equal(roster.settings.mouthX, 0.61);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test('the display-sized headliner keeps the original identity and calibration without a duplicate roster entry', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'afterglow-headliner-preview-'));
+  try {
+    const original = 'priya_gautam_headliner_image.jpeg', preview = 'priya_gautam_headliner_preview.jpg';
+    await writeFile(path.join(dir, original), 'fixture');
+    assert.equal((await listPortraitFiles(dir))[0].src, `/assets/portraits/${original}`);
+    await writeFile(path.join(dir, preview), 'fixture');
+    const found = await listPortraitFiles(dir);
+    assert.equal(found.length, 1); assert.equal(found[0].id, original);
+    assert.equal(found[0].src, `/assets/portraits/${preview}`);
+    assert.deepEqual(found[0].mouth, headlinerMouth);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

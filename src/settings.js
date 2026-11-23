@@ -9,7 +9,7 @@ export const palettes = {
 };
 export const defaults = {
   scene: 'moon', palette: 'moonstone', sensitivity: 1.4, intensity: 0.65,
-  brightness: 0.8, reducedMotion: false, resolution: '1920',
+  brightness: 0.8, reducedMotion: false, resolution: 'auto',
   autoCycle: false, cycleSeconds: 60, mouthX: 0.5, mouthY: 0.65,
   mouthWidth: 0.18, mouthHeight: 0.12, mouthAngle: 0,
   cameraEffect: 'prism', mirror: true, motionThreshold: 28, ballGravity: 0.65,
@@ -33,7 +33,7 @@ export function sanitizeSettings(input) {
     if (ranges[key] && typeof value === 'number' && Number.isFinite(value)) result[key] = Math.max(ranges[key][0], Math.min(ranges[key][1], value));
     else if (typeof original === 'boolean' && typeof value === 'boolean') result[key] = value;
   }
-  for (const [key, choices] of Object.entries({ scene: sceneIds, palette: Object.keys(palettes), resolution: ['1280', '1920', '2560'], cameraEffect: ['prism', 'echo', 'kaleidoscope'], kaleidoSegments: ['8', '12', '16'], memoryBeats: ['1', '2', '4', '8'], memoryCount: ['6', '9', '12'], rangoliPetals: ['12', '16', '24'], tunnelShape: ['rings', 'hexagons'], liquidMaterial: ['chrome', 'silk'], tunakMode: ['solo', 'takeover'], tunakRate: ['1', '2'] })) {
+  for (const [key, choices] of Object.entries({ scene: sceneIds, palette: Object.keys(palettes), resolution: ['auto', '1280', '1920', '2560'], cameraEffect: ['prism', 'echo', 'kaleidoscope'], kaleidoSegments: ['8', '12', '16'], memoryBeats: ['1', '2', '4', '8'], memoryCount: ['6', '9', '12'], rangoliPetals: ['12', '16', '24'], tunnelShape: ['rings', 'hexagons'], liquidMaterial: ['chrome', 'silk'], tunakMode: ['solo', 'takeover'], tunakRate: ['1', '2'] })) {
     if (choices.includes(input[key])) result[key] = input[key];
   }
   if (typeof input.portraitId === 'string' && input.portraitId.length <= 300) result.portraitId = input.portraitId;
